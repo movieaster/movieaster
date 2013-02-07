@@ -1,0 +1,80 @@
+		
+#main_tabs {
+	position:absolute;
+	top: 5px;
+	left: 5px;
+	width:750px;
+	height:530px;
+}
+
+#details_area {
+	position:absolute;
+	top: 5px;
+	left: 770px;
+	width:400px;
+	height:300px;
+}
+
+#toolbar {
+	position:absolute;
+	top: 448px;
+	left: 770px;
+	width:390px;
+	height:75px;
+	padding: 3px;
+}
+
+div.coverView {
+    height: 414px;
+    overflow: auto;
+}
+
+div.tableView {
+    height: 388px;
+    overflow: auto;
+}
+
+.colum0 {
+	width: 58%;
+	text-align: left;
+	cursor:pointer;
+	cursor:hand;
+}
+
+.colum1, .colum2, .colum3 {
+	width: 10%;
+	text-align: center;
+	cursor:pointer;
+	cursor:hand;
+}
+
+.colum4 {
+	width: 12%;
+	text-align: right;
+}
+
+table {
+	width:700px;
+	display: table;
+	border-collapse: separate;
+	border-spacing: 2px;
+	border-color: gray;
+	margin: 0 auto;
+	clear: both;
+	width: 100%;
+	border-collapse: collapse;	
+}
+
+tr {
+	background-color: #FFFFFF;
+	color: #000000;
+}
+
+tr.odd {
+	background-color: #E2E4FF;
+}
+
+img.backdrop {
+	height: 120px;
+	border: 0;
+}

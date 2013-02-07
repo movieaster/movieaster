@@ -1,0 +1,15 @@
+frontend:
+    watched: true
+        watched_path:
+    favorites: true
+        favorites_path:
+    archived: true
+        archived_path:
+    wishlist: true
+folder:
+    images: true
+    backdrops: true
+    dvdidxml : true
+    
+    
+    

@@ -1,0 +1,140 @@
+<!doctype html>
+<html ng-app="MovieasterApp">
+<head>
+	<link href="./web/img/favicon.ico" rel="icon" type="image/x-icon" />
+	<link href="./web/css/bootstrap.css" type="text/css" rel="stylesheet" />
+	<link href="./web/css/themes/eggplant/jquery-ui-1.8.19.custom.css" type="text/css" rel="stylesheet" />	
+	<link href="./web/css/main.css" type="text/css" rel="stylesheet" />
+	<script src="./web/js/angular.min.js"></script>
+	<script src="./web/js/components.js"></script>
+	<script src="./web/js/services.js"></script>
+	<script src="./web/js/app.js"></script>
+	<script>
+		var DEV = 'app_dev.php';
+		var PROD = 'app.php';
+		var PATH = './web/' + DEV;
+	</script>
+	<title>MovieAster - The Movie Manager for your private NAS</title>
+</head>
+<body>
+<div ng-controller="MovieasterCtrl" ng-cloak class="ng-cloak">
+	<div id="main_tabs" ng-init="reload()">
+		<tabs>
+			<pane icon="{{group.icon}}" heading="{{group.title}}" ng-repeat="group in groups">
+				<div ng-switch on="group.view">
+					<div ng-switch-when="wishlist">
+						<autocomplete remote-data="wishlist.service.AutoComplete(request, response)"
+							min-input="2" restrict="true" 
+							selected-item="wishlist.item"
+							selected-callback="wishlist.addItem"
+							placeholder="New Movie">
+						</autocomplete>
+					</div>
+					<div ng-switch-default>
+						<span style="font-size: 0.6em;" class="ui-buttonset">
+							<input type="radio" class="ui-helper-hidden-accessible"><label class="ui-button ui-widget ui-state-default ui-button-text-only ui-corner-left" ng-class="{'ui-state-active' : (group.mode == 'table')}" ng-click="group.mode = 'table'"><span class="ui-button-text">Table</span></label>
+							<input type="radio" class="ui-helper-hidden-accessible"><label class="ui-button ui-widget ui-state-default ui-button-text-only ui-corner-right" ng-class="{'ui-state-active' : (group.mode == 'covers')}" ng-click="group.mode = 'covers'"><span class="ui-button-text">Covers</span></label>
+						</span>
+						<input style="height: 0.8em;" class="span3" type="text" ng-model="group.filter" placeholder="Filter"><span class="ui-icon ui-icon-cancel" style="display:inline-block" title="clear filter" ng-click="group.filter = '';"></span>
+					</div>
+			    </div>
+				<div ng-switch on="group.mode">
+					<div ng-switch-when="covers" class="coverView">
+						<div>
+							<a ng-repeat="movie in movies[group.view] | orderBy:group.sort.column:group.sort.descending | filter:movieFilter(0, group) | filter:movieFilter(1, group) | filter:movieFilter(2, group) | filter:movieFilter(3, group) | filter:movieFilter(4, group)"
+								ng-click="showDetails(movie)">
+							<img ng-src="{{ movie.c }}" title="{{ movie.t }}"></a>
+						</div>
+					</div>
+					<div ng-switch-default>
+						<table>
+							<tr class="table-bordered ui-state-default">
+								<th class="colum0" ng-click="group.sort.column = 't'; group.sort.descending=!group.sort.descending">Name<span class="ui-icon" ng-class="sorterCssClass('t', group)" style="display:inline-block"></span></th>
+								<th class="colum1" ng-click="group.sort.column = 'y'; group.sort.descending=!group.sort.descending">Year<span class="ui-icon" ng-class="sorterCssClass('y', group)" style="display:inline-block"></span></th>
+								<th class="colum2" ng-click="group.sort.column = 'r'; group.sort.descending=!group.sort.descending">Rating<span class="ui-icon" ng-class="sorterCssClass('r', group)" style="display:inline-block"></span></th>
+								<th class="colum3" ng-click="group.sort.column = 'p'; group.sort.descending=!group.sort.descending">Path<span class="ui-icon" ng-class="sorterCssClass('p', group)" style="display:inline-block"></span></th>
+								<th class="colum4">&nbsp;</th>
+							</tr>
+						</table>
+						<div class="tableView">
+							<table class="table table-striped table-hover">
+								<tr ng-repeat="movie in movies[group.view] | orderBy:group.sort.column:group.sort.descending | filter:movieFilter(0, group) | filter:movieFilter(1, group) | filter:movieFilter(2, group) | filter:movieFilter(3, group) | filter:movieFilter(4, group)">
+									<td class="colum0" title="{{movie.t2}}" ng-click="showDetails(movie)">{{movie.t}}</td>
+									<td class="colum1" ng-click="showDetails(movie)">{{movie.y}}</td>
+									<td class="colum2" ng-click="showDetails(movie)">{{movie.r}} ({{movie.v}})</td>
+									<td class="colum3" ng-click="showDetails(movie)">{{movie.p}}</td>
+									<td class="colum4">
+										<a ng-show="group.view != 'archived' && group.view != 'wishlist'" ng-click="move.watched(movie, group.view)">
+											<img src="./web/img/watched_add.png" title="add to watched" ng-show="!status.watched(movie.i)">
+											<img src="./web/img/watched_remove.png" title="remove from watched" ng-show="status.watched(movie.i)">
+										</a>
+										<a ng-show="group.view != 'wishlist'" ng-click="move.favorites(movie, group.view)">
+											<img src="./web/img/favorites_add.png" title="add to favorites" ng-show="!status.favorites(movie.i)">
+											<img src="./web/img/favorites_remove.png" title="remove from favorites" ng-show="status.favorites(movie.i)">
+										</a>
+										<a ng-show="group.view != 'wishlist'" ng-click="move.archived(movie, group.view)">
+											<img src="./web/img/archive_add.png" title="add to archived" ng-show="!status.archived(movie.i)">
+											<img src="./web/img/archive_remove.png" title="remove from archived" ng-show="status.archived(movie.i)">
+										</a>
+									</td>
+								</tr>						
+							</table>
+						</div>
+					</div>
+				</div>
+			</pane>
+		</tabs>
+	</div>
+	<div id="details_area" ng-show="movieDetails != null">
+		<accordion>
+			<accordion-group heading="{{ movieDetails.t }} ({{ movieDetails.y }})">
+				<img ng-src="{{ movieDetails.c }}" class="img-rounded">
+				Rating: {{ movieDetails.r }} ({{ movieDetails.v }})
+				 | <a href="http://www.themoviedb.org/movie/{{ movieDetails.ti }}" target="_blank">TMDb</a>
+				 | <a href="http://www.imdb.com/title/{{ movieDetails.ii }}" target="_blank">IMDb</a>
+				<span ng-show="movieDetails.h != ''">| <a href="{{ movieDetails.h }}" target="_blank" title="Homepage">HP</a></span>
+				<br />
+				Original: {{ movieDetails.t2 }}<br />
+				Generes: <span ng-repeat="genre in movieDetails.g.split(',')"><span ng-show="$index != 0">, </span><a href="" ng-click="addMovieFilter(genre)">{{ genre }}</a></span><br />
+				Actors: <span ng-repeat="actor in movieDetails.a.split(',')"><span ng-show="$index != 0">, </span><a href="" ng-click="addMovieFilter(actor)">{{ actor }}</a></span><br />
+			</accordion-group>
+			<accordion-group heading="Overview">{{movieDetails.o}}</accordion-group>
+			<accordion-group heading="Pictures" hide="{{ movieDetails.b == 0 }}">
+				<a href="{{ backdrop(1) }}" target="_blank">
+					<img ng-src="{{ backdrop(1) }}" class="backdrop img-rounded">
+				</a>
+				<a href="{{ backdrop(2) }}" target="_blank" ng-show="backdrop(2) != ''">
+					<img ng-src="{{ backdrop(2) }}" class="backdrop img-rounded">
+				</a>
+				<a href="{{ backdrop(3) }}" target="_blank" ng-show="backdrop(3) != ''">
+					<img ng-src="{{ backdrop(3) }}" class="backdrop img-rounded">
+				</a>
+				<a href="{{ backdrop(4) }}" target="_blank" ng-show="backdrop(4) != ''">
+					<img ng-src="{{ backdrop(4) }}" class="backdrop img-rounded">
+				</a>
+			</accordion-group>
+			<accordion-group heading="Trailer" hide="{{ movieDetails.tr == '' }}">
+				<iframe ng-src="{{movieDetails.tr}}" width="330" height="220" frameborder="0" allowfullscreen></iframe>
+			</accordion-group>
+		</accordion>
+	</div>
+	
+	<div id="toolbar" class="ui-widget ui-widget-content ui-corner-all">
+		<div>
+			<button ng-click="refreshFolders()" ng-disabled="progressActive" title="Refresh all Folders" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-state-hover"><span class="ui-button-icon-primary ui-icon ui-icon-refresh"></span><span class="ui-button-text"></span></button>
+			<button ng-click="clearLocalStorage()" title="Clear LocalStorage" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-trash"></span><span class="ui-button-text"></span></button>
+			<button ng-show="false" title="Settings" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-gear"></span><span class="ui-button-text"></span></button>
+		</div>
+		<div class="ui-widget">
+			<div class="ui-state-highlight ui-corner-all" ng-class="{'ui-state-error':msgWarning}" style="margin-top: 5px; padding: 0 .7em;">
+				<p>
+					<span class="ui-icon ui-icon-info" ng-show="msgInfo" style="float: left; margin-right: .3em;"></span>
+					<span class="ui-icon ui-icon-alert" ng-show="msgWarning" style="float: left; margin-right: .3em;"></span>
+					<span>{{ progressMsg | capitalize }}</span><img src="./web/img/loading.gif" ng-show="progressActive">
+				</p>
+			</div>
+		</div>
+	</div>
+</div>	
+</body>
+</html>
