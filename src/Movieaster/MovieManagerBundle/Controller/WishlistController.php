@@ -112,10 +112,8 @@ class WishlistController extends Controller {
     public function tmdbCreateAction($id)
     {
 		$logger = $this->get('logger');
-		$logger->debug("==========>Get TmDB Meta Infos for Folder ID: " . $id);
+		$logger->debug("==========>Get Meta Infos for TMDb ID: " . $id);
 	    
-		$modeArchived = false;
-
         $em = $this->getDoctrine()->getEntityManager();
 
 		$tmdbYAML = TMDbFactory::createYAML();
@@ -123,7 +121,7 @@ class WishlistController extends Controller {
 		$movieInfo = json_decode($movieInfoString, true);
 				
 		if(count($movieInfo) >= 0 && $movieInfo[0] != "Nothing found." && $movieInfo[0]["original_name"] != "") {
-			$logger->debug("==========>TmDB movies info: ", $movieInfo);					
+			$logger->debug("==========>TMDb movies info: ", $movieInfo);					
 			$movieInfo = $movieInfo[0];
 			//create new movie record
 			$wishlist = new Wishlist();
@@ -138,6 +136,40 @@ class WishlistController extends Controller {
 			$wishlist->setTrailer("".$movieInfo["trailer"]);
 			$wishlist->setRatingTmdb("".$movieInfo["rating"]);
 			$wishlist->setVotesTmdb("".$movieInfo["votes"]);
+			$genres = $wishlist->getGenres();	
+			for($i=0;$i<count($movieInfo["genres"])-1;$i++) {
+				$name = $movieInfo["genres"][$i]["name"];
+				if($genres != "") {
+					$genres .= ", ";
+				}
+				$genres .= $name;
+			}
+			$wishlist->setGenres($genres);
+			$actors = $wishlist->getActors();
+			$directors = $wishlist->getDirectors();
+			$writers = $wishlist->getWriters();
+			for($i=0;$i<count($movieInfo["cast"])-1;$i++) {
+				$name = $movieInfo["cast"][$i]["name"];
+				if($movieInfo["cast"][$i]["job"] == "Actor" && $movieInfo["cast"][$i]["profile"] != "") {
+					if($actors != "") {
+						$actors .= ", ";
+					}
+					$actors .= $name;
+				} else if($movieInfo["cast"][$i]["job"] == "Director") {
+					if($directors != "") {
+						$directors .= ", ";
+					}
+					$directors .= $name;
+				} else if($movieInfo["cast"][$i]["job"] == "Editor") {
+					if($writers != "") {
+						$writers .= ", ";
+					}
+					$writers .= $name;
+				}
+			}
+			$wishlist->setActors($actors);
+			$wishlist->setDirectors($directors);
+			$wishlist->setWriters($writers);
 			$wishlist->setThumbInline("");				
 			$thumbUrl="";
 			$folderUrl="";
