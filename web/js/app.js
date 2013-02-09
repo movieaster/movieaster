@@ -1,5 +1,5 @@
 angular.module("MovieasterApp", ["movieaster.components", "movieaster.services"])
-	.controller('MovieasterCtrl', function($scope, movieService, wishlistService, folderService, $http) {
+	.controller('MovieasterCtrl', function($scope, movieService, wishlistService, folderService, $http, $location) {
 		$scope.groups = [
 			{ title: "Newest", icon: "./web/img/favicon.ico", view: "newest", mode: "table", sort: {column: 'i', descending: false}, filter: ""},
 			{ title: "Watched", icon: "./web/img/watched.png", view: "watched",  mode: "table", sort: {column: 'i', descending: false}, filter: ""}, 
@@ -244,6 +244,10 @@ angular.module("MovieasterApp", ["movieaster.components", "movieaster.services"]
 			$scope.progress.start("clear localStorage...");
 			localStorage.clear();
 			$scope.progress.done("localStorage cleared.");
+		};
+		
+		$scope.settings = function() {
+			window.location = PATH + "/path/";
 		};
 	})
 	.filter('capitalize', function() {

@@ -1,6 +1,10 @@
+{% extends '::base.html.twig' %}
+
+{% block body %}
+
 <h1>Path list</h1>
 
-<table class="records_list">
+<table class="table table-striped table-hover">
     <thead>
         <tr>
             <th>Id</th>
@@ -16,24 +20,16 @@
             <td>{{ entity.name }}</td>
             <td>{{ entity.path }}</td>
             <td>
-                <ul>
-                    <li>
-                        <a href="{{ path('path_show', { 'id': entity.id }) }}">show</a>
-                    </li>
-                    <li>
-                        <a href="{{ path('path_edit', { 'id': entity.id }) }}">edit</a>
-                    </li>
-                </ul>
+               <a href="{{ path('path_show', { 'id': entity.id }) }}"  class="btn btn-info">show</a>
+               <a href="{{ path('path_edit', { 'id': entity.id }) }}"  class="btn btn-primary">edit</a>
             </td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
 
-<ul>
-    <li>
-        <a href="{{ path('path_new') }}">
-            Create a new entry
-        </a>
-    </li>
-</ul>
+<a href="{{ path('path_new') }}" class="btn btn-primary">
+    Create a new entry
+</a>
+
+{% endblock %}
