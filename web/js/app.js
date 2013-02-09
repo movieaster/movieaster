@@ -219,7 +219,8 @@ angular.module("MovieasterApp", ["movieaster.components", "movieaster.services"]
 		$scope.movieDetails = null;
 		
 		$scope.backdrop = function(num) {
-			if($scope.movieDetails.b == -1) {
+			if($scope.movieDetails == null) {
+			} else if($scope.movieDetails.b == -1) {
 				switch(num) {
 					case 1:
 						return $scope.movieDetails.b1;
@@ -228,7 +229,7 @@ angular.module("MovieasterApp", ["movieaster.components", "movieaster.services"]
 					case 3:
 						return $scope.movieDetails.b3;
 				}
-			} else if($scope.movieDetails != null && $scope.movieDetails.b >= num) {
+			} else if($scope.movieDetails.b >= num) {
 				var fileName = "backdrop";
 				if(num > 1) {
 					fileName += (num - 1);
