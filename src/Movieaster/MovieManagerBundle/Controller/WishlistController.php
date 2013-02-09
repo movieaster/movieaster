@@ -164,12 +164,23 @@ class WishlistController extends Controller {
 			$wishlist->setBackdrop1($backdropUrls[0]);
 			$wishlist->setBackdrop2($backdropUrls[1]);
 			$wishlist->setBackdrop3($backdropUrls[2]);
+			
+			$imgUrl = $wishlist->getThumb();
+			if($imgUrl != "") {
+				$content = file_get_contents($imgUrl); 
+				if ($content !== false) {
+					$wishlist->setThumbInline("data:image/" . substr($imgUrl, -3) . ";base64," . base64_encode($content));
+					$em->flush();
+					$found = 1;
+				}
+			}
+			
 			$em->persist($wishlist);
 			$em->flush();			
     	}
     	return $this->idsAction();
-	}     
-            
+	}	
+	        
 	private function entityToJson($entity) {
         $values["i"] = $entity->getId();
         $values["c"] = $entity->getThumbInline();
