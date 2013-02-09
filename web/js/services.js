@@ -187,6 +187,7 @@ angular.module('movieaster.services', [])
 	        },
 	        remove: function(id, successCallback, errorCallback) {
 				$http.jsonp(PATH + '/wishlist/' + id + '/remove?callback=JSON_CALLBACK').success(function (allIds) {
+					localStorage.removeItem("wishlist_" + id);
 			        reloadWishlist(allIds, successCallback, errorCallback);
 				}).error(errorCallback);
 	        }
