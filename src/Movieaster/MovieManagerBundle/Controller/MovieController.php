@@ -163,17 +163,9 @@ class MovieController extends Controller {
         $values["ii"] = $entity->getImdbId();
         $values["h"] = $entity->getHomepage();
         $values["tr"] = str_replace("http://www.youtube.com/watch?v=", "http://www.youtube-nocookie.com/embed/", $entity->getTrailer());
-		$countBackdrops = 0;
-		if($entity->getBackdrop1() != "") {
-			$countBackdrops++;
-		}
-		if($entity->getBackdrop2() != "") {
-			$countBackdrops++;
-		}
-		if($entity->getBackdrop2() != "") {
-			$countBackdrops++;
-		}
-        $values["b"] = $countBackdrops;
+        $values["b1"] = $entity->getBackdrop1();
+        $values["b2"] = $entity->getBackdrop2();
+        $values["b3"] = $entity->getBackdrop3();
         $values["p"] = $entity->getPath()->getName();
 		return $values; 
 	}

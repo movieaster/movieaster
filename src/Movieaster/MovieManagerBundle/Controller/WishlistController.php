@@ -235,7 +235,6 @@ class WishlistController extends Controller
         $values["ii"] = $entity->getImdbId();
         $values["h"] = $entity->getHomepage();
         $values["tr"] = str_replace("http://www.youtube.com/watch?v=", "http://www.youtube-nocookie.com/embed/", $entity->getTrailer());
-        $values["b"] = -1;
         $values["b1"] = $entity->getBackdrop1();
         $values["b2"] = $entity->getBackdrop2();
         $values["b3"] = $entity->getBackdrop3();

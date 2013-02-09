@@ -218,27 +218,6 @@ angular.module("MovieasterApp", ["movieaster.components", "movieaster.services"]
 				
 		$scope.movieDetails = null;
 		
-		$scope.backdrop = function(num) {
-			if($scope.movieDetails == null) {
-			} else if($scope.movieDetails.b == -1) {
-				switch(num) {
-					case 1:
-						return $scope.movieDetails.b1;
-					case 2:
-						return $scope.movieDetails.b2;
-					case 3:
-						return $scope.movieDetails.b3;
-				}
-			} else if($scope.movieDetails.b >= num) {
-				var fileName = "backdrop";
-				if(num > 1) {
-					fileName += (num - 1);
-				}
-				return "./web/path/" + $scope.movieDetails.i + "/" + fileName + ".jpg";
-			}
-			return "";
-		};
-		
 		$scope.showDetails = function(movie) {
 			$scope.movieDetails = movie;
 		};

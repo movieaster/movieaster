@@ -109,18 +109,15 @@
 				Actors: <span ng-repeat="actor in movieDetails.a.split(',')"><span ng-show="$index != 0">, </span><a href="" ng-click="addMovieFilter(actor)">{{ actor }}</a></span><br />
 			</accordion-group>
 			<accordion-group heading="Overview">{{movieDetails.o}}</accordion-group>
-			<accordion-group heading="Pictures" hide="{{ movieDetails.b == 0 }}">
-				<a href="{{ backdrop(1) }}" target="_blank">
-					<img ng-src="{{ backdrop(1) }}" class="backdrop img-rounded">
+			<accordion-group heading="Pictures" hide="{{ movieDetails.b1 == '' }}">
+				<a href="{{ movieDetails.b1 }}" target="_blank">
+					<img ng-src="{{ movieDetails.b1 }}" class="backdrop img-rounded">
 				</a>
-				<a href="{{ backdrop(2) }}" target="_blank" ng-show="backdrop(2) != ''">
-					<img ng-src="{{ backdrop(2) }}" class="backdrop img-rounded">
+				<a href="{{ movieDetails.b2 }}" target="_blank" ng-show="movieDetails.b2 != ''">
+					<img ng-src="{{ movieDetails.b2 }}" class="backdrop img-rounded">
 				</a>
-				<a href="{{ backdrop(3) }}" target="_blank" ng-show="backdrop(3) != ''">
-					<img ng-src="{{ backdrop(3) }}" class="backdrop img-rounded">
-				</a>
-				<a href="{{ backdrop(4) }}" target="_blank" ng-show="backdrop(4) != ''">
-					<img ng-src="{{ backdrop(4) }}" class="backdrop img-rounded">
+				<a href="{{ movieDetails.b3 }}" target="_blank" ng-show="movieDetails.b3 != ''">
+					<img ng-src="{{ movieDetails.b3 }}" class="backdrop img-rounded">
 				</a>
 			</accordion-group>
 			<accordion-group heading="Trailer" hide="{{ movieDetails.tr == '' }}">
