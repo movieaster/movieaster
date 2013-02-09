@@ -17,14 +17,16 @@ use Movieaster\MovieManagerBundle\Entity\Wishlist;
  *
  * @Route("/wishlist")
  */
-class WishlistController extends Controller {
+class WishlistController extends Controller
+{
 	
     /**
      * Placeholder for root path.
      *
      * @Route("/", name="wishlist")
      */
-    public function indexAction() {
+    public function indexAction()
+    {
 	    return new Response("not in use");
     }
     
@@ -33,7 +35,8 @@ class WishlistController extends Controller {
      *
      * @Route("/ids", name="wishlist_movie_ids")
      */
-    public function idsAction() {
+    public function idsAction()
+    {
         $em = $this->getDoctrine()->getEntityManager();
 	    $result = $em->createQuery('SELECT m.id FROM MovieasterMovieManagerBundle:Wishlist m')->execute();
         $values = array();
@@ -48,7 +51,8 @@ class WishlistController extends Controller {
      *
      * @Route("/infos", name="whislist_movie_infos")
      */
-    public function infosAction() {
+    public function infosAction()
+    {
         $ids = explode(",", $_REQUEST['ids']);//$request->query->get('ids'));
         $em = $this->getDoctrine()->getEntityManager();	
 		$repo = $em->getRepository('MovieasterMovieManagerBundle:Wishlist');	
@@ -65,7 +69,8 @@ class WishlistController extends Controller {
      *
      * @Route("/{id}/remove", name="wishlist_remove")
      */
-    public function removeAction($id) {
+    public function removeAction($id)
+    {
         $em = $this->getDoctrine()->getEntityManager();
         $entity = $em->getRepository('MovieasterMovieManagerBundle:Wishlist')->find($id);
         if(!$entity) {
@@ -81,7 +86,8 @@ class WishlistController extends Controller {
      *
      * @Route("/tmdb_query", name="wishlist_tmdb_search_query")
      */
-    public function tndbQueryAction() {
+    public function tndbQueryAction()
+    {
 	    $request = $this->getRequest();
 	    $query = $request->query->get('term');
 
@@ -229,6 +235,7 @@ class WishlistController extends Controller {
         $values["ii"] = $entity->getImdbId();
         $values["h"] = $entity->getHomepage();
         $values["tr"] = str_replace("http://www.youtube.com/watch?v=", "http://www.youtube-nocookie.com/embed/", $entity->getTrailer());
+        $values["b"] = -1;
         $values["b1"] = $entity->getBackdrop1();
         $values["b2"] = $entity->getBackdrop2();
         $values["b3"] = $entity->getBackdrop3();

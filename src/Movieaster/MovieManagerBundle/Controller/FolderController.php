@@ -338,7 +338,8 @@ class FolderController extends Controller
 	    return new Response("TODO");
     }
     
-    private function downloadImg($url, $movie, $filename) {
+    private function downloadImg($url, $movie, $filename)
+    {
 	    return 0;
 	    /*
 	    if($url == "") {
@@ -357,7 +358,8 @@ class FolderController extends Controller
 		*/
 	}
 	
-    private function loadMovie($id, $em) {
+    private function loadMovie($id, $em)
+    {
         $movie = $em->getRepository('MovieasterMovieManagerBundle:Movie')->find($id);
         if (!$movie) {
             throw $this->createNotFoundException('Unable to find Movie entity.');
@@ -365,7 +367,8 @@ class FolderController extends Controller
         return $movie;
 	}
 		
-	private function toJsonResponse($data) {
+	private function toJsonResponse($data)
+	{
 		$response = new JsonResponse();
 		$response->setData($data);
 		$callbackFunction = $_REQUEST['callback']; //$request->query->get('callback');
