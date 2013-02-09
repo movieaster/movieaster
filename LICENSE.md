@@ -53,9 +53,21 @@ JavaScript Libraries
    (c) 2010-2012 Google
 
 
+CSS
+---
+
+ * jQuery UI CSS Framework 1.8.19
+   MIT or GPL Version 2 licenses
+   (c) 2012 http://jqueryui.com/about
+   
+ * Bootstrap v2.2.2
+   Apache License v2.0
+   (c) 2012 Twitter, Inc
+
+
 Images
 ------
-
+ 
  * favicon.ico
    Creative Commons
    (c) by sacrebleupixelated (http://www.favicon.cc/?action=icon&file_id=545129)
