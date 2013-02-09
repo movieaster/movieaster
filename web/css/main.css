@@ -53,6 +53,12 @@ div.tableView {
 	text-align: right;
 }
 
+.colum5, td.colum5 {
+	width: 24%;
+	text-align: right;
+}
+
+
 table {
 	width:700px;
 	display: table;

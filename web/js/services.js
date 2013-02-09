@@ -184,6 +184,11 @@ angular.module('movieaster.services', [])
 				$http.jsonp(PATH + '/wishlist/' + tmdbId + '/create?callback=JSON_CALLBACK').success(function (allIds) {
 			        reloadWishlist(allIds, successCallback, errorCallback);
 				}).error(errorCallback);
+	        },
+	        remove: function(id, successCallback, errorCallback) {
+				$http.jsonp(PATH + '/wishlist/' + id + '/remove?callback=JSON_CALLBACK').success(function (allIds) {
+			        reloadWishlist(allIds, successCallback, errorCallback);
+				}).error(errorCallback);
 	        }
 	    }
 	});

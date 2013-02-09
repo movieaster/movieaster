@@ -52,8 +52,9 @@
 								<th class="colum0" ng-click="group.sort.column = 't'; group.sort.descending=!group.sort.descending">Name<span class="ui-icon" ng-class="sorterCssClass('t', group)" style="display:inline-block"></span></th>
 								<th class="colum1" ng-click="group.sort.column = 'y'; group.sort.descending=!group.sort.descending">Year<span class="ui-icon" ng-class="sorterCssClass('y', group)" style="display:inline-block"></span></th>
 								<th class="colum2" ng-click="group.sort.column = 'r'; group.sort.descending=!group.sort.descending">Rating<span class="ui-icon" ng-class="sorterCssClass('r', group)" style="display:inline-block"></span></th>
-								<th class="colum3" ng-click="group.sort.column = 'p'; group.sort.descending=!group.sort.descending">Path<span class="ui-icon" ng-class="sorterCssClass('p', group)" style="display:inline-block"></span></th>
-								<th class="colum4">&nbsp;</th>
+								<th class="colum3" ng-show="group.view != 'wishlist'" ng-click="group.sort.column = 'p'; group.sort.descending=!group.sort.descending">Path<span class="ui-icon" ng-class="sorterCssClass('p', group)" style="display:inline-block"></span></th>
+								<th class="colum4" ng-show="group.view != 'wishlist'">&nbsp;</th>
+								<th class="colum5" ng-show="group.view == 'wishlist'">&nbsp;</th>
 							</tr>
 						</table>
 						<div class="tableView">
@@ -62,20 +63,29 @@
 									<td class="colum0" title="{{movie.t2}}" ng-click="showDetails(movie)">{{movie.t}}</td>
 									<td class="colum1" ng-click="showDetails(movie)">{{movie.y}}</td>
 									<td class="colum2" ng-click="showDetails(movie)">{{movie.r}} ({{movie.v}})</td>
-									<td class="colum3" ng-click="showDetails(movie)">{{movie.p}}</td>
-									<td class="colum4">
-										<a ng-show="group.view != 'archived' && group.view != 'wishlist'" ng-click="move.watched(movie, group.view)">
+									<td class="colum3" ng-show="group.view != 'wishlist'" ng-click="showDetails(movie)">{{movie.p}}</td>
+									<td class="colum4" ng-show="group.view != 'wishlist'">
+										<a ng-show="group.view != 'archived'" ng-click="move.watched(movie, group.view)">
 											<img src="./web/img/watched_add.png" title="add to watched" ng-show="!status.watched(movie.i)">
 											<img src="./web/img/watched_remove.png" title="remove from watched" ng-show="status.watched(movie.i)">
 										</a>
-										<a ng-show="group.view != 'wishlist'" ng-click="move.favorites(movie, group.view)">
+										<a ng-click="move.favorites(movie, group.view)">
 											<img src="./web/img/favorites_add.png" title="add to favorites" ng-show="!status.favorites(movie.i)">
 											<img src="./web/img/favorites_remove.png" title="remove from favorites" ng-show="status.favorites(movie.i)">
 										</a>
-										<a ng-show="group.view != 'wishlist'" ng-click="move.archived(movie, group.view)">
+										<a ng-click="move.archived(movie, group.view)">
 											<img src="./web/img/archive_add.png" title="add to archived" ng-show="!status.archived(movie.i)">
 											<img src="./web/img/archive_remove.png" title="remove from archived" ng-show="status.archived(movie.i)">
 										</a>
+									</td>
+									<td class="colum5" ng-show="group.view == 'wishlist'">
+										<a href="http://www.amazon.com/s/ref=nb_sb_noss_1?url=search-alias%3Dinstant-video&field-keywords={{ movie.t2 }}" title="Buy on Amazon VOD" target="_blank">
+											<img src="./web/img/amazon.gif">
+										</a>
+										<a href="http://www.itunes.com/movies/{{ movie.t2 }}" title="Buy on iTunes Store" target="_blank">
+											<img src="./web/img/itunes.gif">
+										</a>
+										<button ng-click="wishlist.removeItem(movie)" title="remove" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-trash"></span><span class="ui-button-text"></span></button>
 									</td>
 								</tr>						
 							</table>

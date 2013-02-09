@@ -203,7 +203,17 @@ angular.module("MovieasterApp", ["movieaster.components", "movieaster.services"]
 				}, function() {
 					$scope.progress.error("TMDb service communication error.");
 				});
-			}
+			},
+			removeItem : function(movie){
+				$scope.progress.start('remove "' + movie.t + '" from Wishlist...');
+				$scope.move.fadeOut(movie, "wishlist");
+				wishlistService.remove(movie.i, function (result) {
+					$scope.movies["wishlist"] = result;	
+					$scope.progress.done("Wishlist updated.");
+				}, function() {
+					$scope.progress.error("Wishlist backend communication error.");
+				});
+			}			
 		};
 				
 		$scope.movieDetails = null;
