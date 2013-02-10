@@ -340,8 +340,6 @@ class FolderController extends Controller
     
     private function downloadImg($url, $movie, $filename)
     {
-	    return 0;
-	    /*
 	    if($url == "") {
 		    return 0;
 	    }
@@ -355,7 +353,6 @@ class FolderController extends Controller
 			return 1;
 		}
 		return 0;
-		*/
 	}
 	
     private function loadMovie($id, $em)
