@@ -65,7 +65,7 @@ angular.module('movieaster.services', [])
 		
 		var downloadImage = function(id, image, errorCallback) {
 			$http.jsonp(PATH + '/folder/' + id + '/download/image/' + image + '?callback=JSON_CALLBACK')
-				.error(function() { errorCallback(imag + "image for folder " + id); } );
+				.error(function() { errorCallback(image + " image for folder " + id); } );
 		};
 		var downloadAllImages = function(id, sucessCallback, errorCallback) {
 			$http.jsonp(PATH + '/folder/' + id + '/download/image/thumb?callback=JSON_CALLBACK').success(function(thumbData) {
@@ -74,7 +74,7 @@ angular.module('movieaster.services', [])
 				downloadImage(id, "backdrop2", errorCallback);
 				downloadImage(id, "backdrop3", errorCallback);
 				sucessCallback("thumb image downloaded.");
-			}).error(function() { errorCallback("thumb image for folder " + folderData["i"]); } );
+			}).error(function() { errorCallback("thumb image for folder " + id); } );
 		};
 		var downloadMetaInfos = function(id, sucessCallback, errorCallback) {
 			$http.jsonp(PATH + '/folder/' + id + '/download/meta?callback=JSON_CALLBACK').success(function(movieData) {
