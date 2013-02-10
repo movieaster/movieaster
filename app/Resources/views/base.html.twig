@@ -4,10 +4,37 @@
 		<title>{% block title %}MovieAster{% endblock %}</title>
 		<link href="{{ asset('css/bootstrap.css') }}" type="text/css" rel="stylesheet" />
 		<link href="{{ asset('img/favicon.ico') }}" rel="icon" type="image/x-icon" />
+		<style type="text/css">
+		body {
+			background-color: #f0f0f2;
+			margin: 0;
+			padding: 0;
+		}
+		div#main {
+			width: 600px;
+			margin: 5em auto;
+			padding: 3em;
+			background-color: #fff;
+			border-radius: 1em;
+		}
+		@media (max-width: 600px) {
+			body {
+				background-color: #fff;
+			}
+			div#main {
+				width: auto;
+				margin: 0 auto;
+				border-radius: 0;
+				padding: 1em;
+			}
+		}
+		</style>
 		{% block stylesheets %}{% endblock %}
 	</head>
 	<body>
+		<div id="main">
 		{% block body %}{% endblock %}
+		</div>
 		{% block javascripts %}{% endblock %}
 	</body>
 </html>
