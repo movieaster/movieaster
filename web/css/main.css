@@ -84,3 +84,8 @@ img.backdrop {
 	height: 120px;
 	border: 0;
 }
+
+/* JQuery UI hack */
+.ui-widget {
+	font-size: 1.0em;
+}
