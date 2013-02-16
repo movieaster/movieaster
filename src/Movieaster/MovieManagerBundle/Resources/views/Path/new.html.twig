@@ -1,6 +1,6 @@
 {% extends '::base.html.twig' %}
 
-{% block body %}
+{% block content %}
 
 <h1>Path creation</h1>
 
@@ -11,12 +11,7 @@
     </p>
 </form>
 
-<ul>
-    <li>
-        <a href="{{ path('path') }}">
-            Back to the list
-        </a>
-    </li>
-</ul>
+
+&larr; <a href="{{ path('path') }}">Back to the list</a>
 
 {% endblock %}
