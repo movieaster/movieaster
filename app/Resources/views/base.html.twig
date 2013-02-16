@@ -3,28 +3,8 @@
 	<head>
 		<title>{% block title %}MovieAster{% endblock %}</title>
 		<link href="{{ asset('css/bootstrap.css') }}" type="text/css" rel="stylesheet" />
+		<link href="{{ asset('css/settings.css') }}" type="text/css" rel="stylesheet" />
 		<link href="{{ asset('img/favicon.ico') }}" rel="icon" type="image/x-icon" />
-		<style type="text/css">
-body {
-	padding-top: 40px;
-	padding-bottom: 40px;
-	background-color: #f5f5f5;
-}
-
-.content {
-	max-width: 600px;
-	padding: 19px 29px 29px;
-	margin: 0 auto 20px;
-	background-color: #fff;
-	border: 1px solid #e5e5e5;
-	-webkit-border-radius: 5px;
-	   -moz-border-radius: 5px;
-	        border-radius: 5px;
-	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-	   -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-	        box-shadow: 0 1px 2px rgba(0,0,0,.05);
-}      
-		</style>
 		{% block stylesheets %}{% endblock %}
 	</head>
 	<body>
