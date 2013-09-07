@@ -11,17 +11,17 @@ System Requirements
 Installation
 ------------
 ### 1) Download newest Version
-    download and unzip https://github.com/movieaster/movieaster/archive/master.zip
-or
+
     git clone git://github.com/movieaster/movieaster.git
+
+or download and unzip:
+https://github.com/movieaster/movieaster/archive/master.zip
+
 
 ### 2) Install the Vendor Libraries
 Run the following:
 
-
     php bin/vendors install
-
-
 
 Note that you **must** have git installed and be able to execute the `git`
 command to execute this script. If you don't have git available, either install
@@ -34,8 +34,12 @@ it or download Symfony with the vendor libraries already included.
 
 ### 4) Config MySQL
   - Create DB a new DB `movieaster`
+  
     php app/console doctrine:database:create
+    
   - update schema: sql/movieaster.sql
+  
     php app/console doctrine:schema:update --force
+    
   - config DB username/password: app/config/parameters.ini
 
