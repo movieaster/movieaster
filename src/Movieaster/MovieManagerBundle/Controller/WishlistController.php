@@ -7,7 +7,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDb;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDbFactory;
 use Movieaster\MovieManagerBundle\Entity\Wishlist;
@@ -242,13 +241,18 @@ class WishlistController extends Controller
 	}
 	
 	private function toJsonResponse($data) {
-		$response = new JsonResponse();
-		$response->setData($data);
+		$response = new Response();
 		$callbackFunction = $_REQUEST['callback']; //$request->query->get('callback');
+		$content = "";
 		if($callbackFunction != null) {
-			$response->setCallback($callbackFunction);
+			$content .= $callbackFunction . "(";
 		}
+		$content .= json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+		if($callbackFunction != null) {
+			$content .= ");";
+		}
+		$response->setContent($content);
 		return $response;
 	}
-    
+
 }

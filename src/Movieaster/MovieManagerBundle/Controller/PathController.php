@@ -25,7 +25,7 @@ class PathController extends Controller
      */
     public function indexAction()
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->getDoctrine()->getEntityManager();
 
         $entities = $em->getRepository('MovieasterMovieManagerBundle:Path')->findAll();
 
@@ -42,7 +42,7 @@ class PathController extends Controller
      */
     public function showAction($id)
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->getDoctrine()->getEntityManager();
 
         $entity = $em->getRepository('MovieasterMovieManagerBundle:Path')->find($id);
 
@@ -89,7 +89,7 @@ class PathController extends Controller
         $form->bind($request);
 
         if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->getDoctrine()->getEntityManager();
             $em->persist($entity);
             $em->flush();
 
@@ -110,7 +110,7 @@ class PathController extends Controller
      */
     public function editAction($id)
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->getDoctrine()->getEntityManager();
 
         $entity = $em->getRepository('MovieasterMovieManagerBundle:Path')->find($id);
 
@@ -137,7 +137,7 @@ class PathController extends Controller
      */
     public function updateAction(Request $request, $id)
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->getDoctrine()->getEntityManager();
 
         $entity = $em->getRepository('MovieasterMovieManagerBundle:Path')->find($id);
 
@@ -175,7 +175,7 @@ class PathController extends Controller
         $form->bind($request);
 
         if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->getDoctrine()->getEntityManager();
             $entity = $em->getRepository('MovieasterMovieManagerBundle:Path')->find($id);
 
             if (!$entity) {

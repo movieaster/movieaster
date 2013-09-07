@@ -36,7 +36,7 @@ Services
 PHP Libraries
 -------------
 
- * Symfony2 v2.1.6
+ * Symfony2 v2.0
    MIT License
    (c) by Fabien Potencier (http://symfony.com)
    

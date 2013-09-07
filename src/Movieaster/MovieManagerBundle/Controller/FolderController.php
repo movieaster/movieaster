@@ -8,7 +8,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Finder\Finder;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDb;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDbFactory;
@@ -152,8 +151,7 @@ class FolderController extends Controller
 			$moviesResultString = $tmdbYAML->searchMovie($movie->getNameFolder(), TMDb::JSON);
 			$moviesResult = json_decode($moviesResultString, true);
 			
-			$logger->debug("TmDB movies result: ", $moviesResult);
-			
+			$logger->debug("TmDB movies result: ", $moviesResult);			
 			$tmdID = $moviesResult['0']['id'];
 			$movieInfoString = $tmdbYAML->getMovie($tmdID, TMDb::TMDB, TMDb::JSON);
 			$movieInfo = json_decode($movieInfoString, true);
@@ -364,14 +362,19 @@ class FolderController extends Controller
         return $movie;
 	}
 		
-	private function toJsonResponse($data)
-	{
-		$response = new JsonResponse();
-		$response->setData($data);
+	private function toJsonResponse($data) {
+		$response = new Response();
 		$callbackFunction = $_REQUEST['callback']; //$request->query->get('callback');
+		$content = "";
 		if($callbackFunction != null) {
-			$response->setCallback($callbackFunction);
+			$content .= $callbackFunction . "(";
 		}
+		$content .= json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+		if($callbackFunction != null) {
+			$content .= ");";
+		}
+		$response->setContent($content);
 		return $response;
-	}	
+	}
+
 }
