@@ -10,7 +10,7 @@ System Requirements
 
 Installation
 ------------
-### 1) Download newest Version
+### 1) Download Latest Version
 
     git clone git://github.com/movieaster/movieaster.git
 
