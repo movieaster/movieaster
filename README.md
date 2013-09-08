@@ -10,7 +10,7 @@ System Requirements
 
 Installation
 ------------
-### 1) Download newest Version
+### 1) Download Latest Version
 
     git clone git://github.com/movieaster/movieaster.git
 
@@ -33,13 +33,13 @@ it or download Symfony with the vendor libraries already included.
   - QNAP NAS: https://github.com/movieaster/movieaster/wiki/Install-on-Qnap-NAS
 
 ### 4) Config MySQL
-  - Create DB a new DB `movieaster`
-  
+Create DB a new DB `movieaster`:
+
     php app/console doctrine:database:create
-    
-  - update schema: sql/movieaster.sql
-  
+
+Update schema (sql/movieaster.sql):
+
     php app/console doctrine:schema:update --force
-    
-  - config DB username/password: app/config/parameters.ini
+
+Config DB username/password: app/config/parameters.ini
 
