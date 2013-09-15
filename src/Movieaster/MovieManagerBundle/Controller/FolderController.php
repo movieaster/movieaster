@@ -144,60 +144,72 @@ class FolderController extends Controller
         $movie = $em->getRepository('MovieasterMovieManagerBundle:Movie')->find($id);
  		if($movie) {
 	 		$logger->debug("Get TmDB Meta Infos for Folder: " . $movie->getNameFolder());
-			$tmdbYAML = TMDbFactory::createYAML();
-			$logger->debug("TmDB YAML API.");
+			$tmdbApi = TMDbFactory::createInstance();
+			$logger->debug("TmDB API.");
 
 	 		//add new movies
-			$moviesResultString = $tmdbYAML->searchMovie($movie->getNameFolder(), TMDb::JSON);
-			$moviesResult = json_decode($moviesResultString, true);
+	 		preg_match('/(?P<name>\w+) \((?P<year>\d+)\)/', $movie->getNameFolder(), $movieFolderInfo);
+			$moviesResult = $tmdbApi->searchMovie($movieFolderInfo["name"], 1, FALSE, $movieFolderInfo["year"], NULL);
 			
-			$logger->debug("TmDB movies result: ", $moviesResult);			
-			$tmdID = $moviesResult['0']['id'];
-			$movieInfoString = $tmdbYAML->getMovie($tmdID, TMDb::TMDB, TMDb::JSON);
-			$movieInfo = json_decode($movieInfoString, true);
-					
-			if(count($movieInfo) >= 0 && $movieInfo[0] != "Nothing found." && $movieInfo[0]["original_name"] != "") {
+			$logger->debug("TmDB movies result: ", $moviesResult);
+			$tmdbId = $moviesResult["results"][0]["id"];
+			
+			$movieInfo = $tmdbApi->getMovie($tmdbId);
+			if($movieInfo != "Nothing found." && $movieInfo["original_title"] != "") {
 				$logger->debug("TmDB movies info: ", $movieInfo);					
 				$movie->setFound(true);
-				$movieInfo = $movieInfo[0];
 				//create new movie record
-				$movie->setName("".$movieInfo["name"]);
-				$movie->setNameOriginal("".$movieInfo["original_name"]);
-				$movie->setNameAlternative("".$movieInfo["alternative_name"]);    
-				$movie->setReleased(new \DateTime($movieInfo["released"]));
-				$movie->setOverview("".$movieInfo["overview"]);
-				$movie->setImdbId("".$movieInfo["imdb_id"]);
-				$movie->setTmdbId("".$movieInfo["id"]);
-				$movie->setHomepage("".$movieInfo["homepage"]);
-				$movie->setTrailer("".$movieInfo["trailer"]);
-				$movie->setRatingTmdb("".$movieInfo["rating"]);
-				$movie->setVotesTmdb("".$movieInfo["votes"]);
+				$movie->setName($movieInfo["title"]);
+				$movie->setNameOriginal($movieInfo["original_title"]);
+				if(array_key_exists("tagline", $movieInfo)) {
+					$movie->setNameAlternative("".$movieInfo["tagline"]);    
+				}
+				$movie->setReleased(new \DateTime($movieInfo["release_date"]));
+				if(array_key_exists("overview", $movieInfo)) {
+					$movie->setOverview($movieInfo["overview"]);
+				}
+				if(array_key_exists("imdb_id", $movieInfo)) {
+					$movie->setImdbId("".$movieInfo["imdb_id"]);
+				}
+				if(array_key_exists("id", $movieInfo)) {
+					$movie->setTmdbId("".$movieInfo["id"]);
+				}
+				if(array_key_exists("homepage", $movieInfo)) {
+					$movie->setHomepage($movieInfo["homepage"]);
+				}
+				if(array_key_exists("trailer", $movieInfo)) {
+					$movie->setTrailer($movieInfo["trailer"]);
+				}
+				if(array_key_exists("vote_average", $movieInfo)) {
+					$movie->setRatingTmdb("".$movieInfo["vote_average"]);
+				}
+				if(array_key_exists("vote_count", $movieInfo)) {
+					$movie->setVotesTmdb("".$movieInfo["vote_count"]);
+				}
 				$movie->setThumbInline("");				
-				$thumbUrl="";
-				$folderUrl="";
-				$backdropUrls=array();
-				for($i=0;$i<count($movieInfo["posters"])-1;$i++) {
-					if($folderUrl == "" && $movieInfo["posters"][$i]["image"]["size"] == "original") {
-						$folderUrl = $movieInfo["posters"][$i]["image"]["url"];
-					}
-					if($thumbUrl == "" && $movieInfo["posters"][$i]["image"]["size"] == "thumb") {
-						$thumbUrl = $movieInfo["posters"][$i]["image"]["url"];
-					}
+				
+				$movieImages = $tmdbApi->getMovieImages($tmdbId);
+				$imageFilePaths = array();
+				$idx = 0;
+				$imageFilePaths[$idx++] = $movieInfo["backdrop_path"];
+				for($i=0;$i<count($movieImages["backdrops"])-1;$i++) {
+					$imageFilePaths[$idx++] = $movieImages["backdrops"][$i]["file_path"];
 				}
-				$backdropUrls[0]="";
-				$backdropUrls[1]="";
-				$backdropUrls[2]="";
-				for($i=0,$countBackdrops=0; $countBackdrops<4 && $i<count($movieInfo["backdrops"])-1; $i++) {
-					if($movieInfo["backdrops"][$i]["image"]["size"] == "original") {
-						$backdropUrls[$countBackdrops]= $movieInfo["backdrops"][$i]["image"]["url"];
-						$countBackdrops++;								
-					}
+				for($i=0;$i<count($movieImages["posters"])-1;$i++) {
+					$imageFilePaths[$idx++] = $movieImages["posters"][$i]["file_path"];
+				}	
+				$movie->setBackdrop1($tmdbApi->getImageUrl($imageFilePaths[0], TMDb::IMAGE_BACKDROP, "original"));			
+				if($idx > 1) { 
+					$movie->setBackdrop2($tmdbApi->getImageUrl($imageFilePaths[1], TMDb::IMAGE_BACKDROP, "original"));
 				}
+				if($idx > 2) { 
+					$movie->setBackdrop3($tmdbApi->getImageUrl($imageFilePaths[2], TMDb::IMAGE_BACKDROP, "original"));
+				}
+				$thumbUrl = $tmdbApi->getImageUrl($movieInfo["poster_path"], TMDb::IMAGE_POSTER, "w92");
+				$folderUrl = $tmdbApi->getImageUrl($movieInfo["poster_path"], TMDb::IMAGE_POSTER, "original");
 				$movie->setThumb($thumbUrl);
 				$movie->setPoster($folderUrl);
-				$movie->setBackdrop1($backdropUrls[0]);
-				$movie->setBackdrop2($backdropUrls[1]);
-				$movie->setBackdrop3($backdropUrls[2]);
+				
 				$genres = $movie->getGenres();	
 				for($i=0;$i<count($movieInfo["genres"])-1;$i++) {
 					$name = $movieInfo["genres"][$i]["name"];
@@ -210,19 +222,23 @@ class FolderController extends Controller
 				$actors = $movie->getActors();
 				$directors = $movie->getDirectors();
 				$writers = $movie->getWriters();
-				for($i=0;$i<count($movieInfo["cast"])-1;$i++) {
-					$name = $movieInfo["cast"][$i]["name"];
-					if($movieInfo["cast"][$i]["job"] == "Actor" && $movieInfo["cast"][$i]["profile"] != "") {
-						if($actors != "") {
-							$actors .= ", ";
-						}
-						$actors .= $name;
-					} else if($movieInfo["cast"][$i]["job"] == "Director") {
+				
+				$cast = $tmdbApi->getMovieCast($tmdbId);
+				//print_r($cast);
+				for($i=0;$i<count($cast["cast"])-1;$i++) {;
+					if($i != 0) {
+						$actors .= ", ";
+					}
+					$actors .= $cast["cast"][$i]["name"];
+				}
+				for($i=0;$i<count($cast["crew"])-1;$i++) {
+					$name = $cast["crew"][$i]["name"];
+					if($cast["crew"][$i]["job"] == "Director") {
 						if($directors != "") {
 							$directors .= ", ";
 						}
 						$directors .= $name;
-					} else if($movieInfo["cast"][$i]["job"] == "Editor") {
+					} else if($cast["crew"][$i]["job"] == "Editor") {
 						if($writers != "") {
 							$writers .= ", ";
 						}
@@ -232,7 +248,8 @@ class FolderController extends Controller
 				$movie->setActors($actors);
 				$movie->setDirectors($directors);
 				$movie->setWriters($writers);
-				$logger->debug("persist new Movie.");						
+				$logger->debug("persist new Movie.");
+										
 				$em->persist($movie);
 				$em->flush();
 		        $values = array("f" => 1, "i" => $movie->getId(), "n" => $movie->getName());

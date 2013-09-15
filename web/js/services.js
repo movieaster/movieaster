@@ -69,10 +69,10 @@ angular.module('movieaster.services', [])
 		};
 		var downloadAllImages = function(id, sucessCallback, errorCallback) {
 			$http.jsonp(PATH + '/folder/' + id + '/download/image/thumb?callback=JSON_CALLBACK').success(function(thumbData) {
-				downloadImage(id, "folder", errorCallback);
+				/*downloadImage(id, "folder", errorCallback);
 				downloadImage(id, "backdrop1", errorCallback);
 				downloadImage(id, "backdrop2", errorCallback);
-				downloadImage(id, "backdrop3", errorCallback);
+				downloadImage(id, "backdrop3", errorCallback);*/
 				sucessCallback("thumb image downloaded.");
 			}).error(function() { errorCallback("thumb image for folder " + id); } );
 		};

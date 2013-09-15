@@ -42,7 +42,7 @@ PHP Libraries
    
  * TMDb PHP API class
    BSD License
-   (c) by Jonas De Smet
+   (c) by Jonas De Smet https://github.com/vuphuong87/imdb-php-api
 
    
 JavaScript Libraries
