@@ -34,6 +34,7 @@ it or download Symfony with the vendor libraries already included.
 
 ### 4) Config MySQL
 Config DB username/password: app/config/parameters.ini
+
 Create DB a new DB `movieaster`:
 
     php app/console doctrine:database:create
