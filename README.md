@@ -33,6 +33,7 @@ it or download Symfony with the vendor libraries already included.
   - QNAP NAS: https://github.com/movieaster/movieaster/wiki/Install-on-Qnap-NAS
 
 ### 4) Config MySQL
+Config DB username/password: app/config/parameters.ini
 Create DB a new DB `movieaster`:
 
     php app/console doctrine:database:create
@@ -40,6 +41,4 @@ Create DB a new DB `movieaster`:
 Update schema (sql/movieaster.sql):
 
     php app/console doctrine:schema:update --force
-
-Config DB username/password: app/config/parameters.ini
 
