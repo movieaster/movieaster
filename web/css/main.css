@@ -89,3 +89,16 @@ img.backdrop {
 .ui-widget {
 	font-size: 1.0em;
 }
+
+#toolbar .ui-button-text {
+	font-size: 1.3em;
+}
+
+.ui-buttonset {
+	font-size: 0.6em;
+}
+
+input.movie_filter {
+	height: 0.8em;
+	vertical-align: baseline;
+}

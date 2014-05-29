@@ -223,4 +223,33 @@ angular.module('movieaster.components', []).
         });
         scope.$eval(attrs.focused + '=true')
     }
-});  
+})
+.directive('smallButton', function() {
+    return {
+      restrict: 'E',
+      transclude: true,
+      scope: { 
+	      text: '@',
+	      tooltip: '@',
+	      iconClass: '@',
+	      clickEvent: '&',
+	      
+      },
+      link: function(scope, element, attrs, accordionCtrl) {
+	    scope.active = false;
+        scope.clickButton = function() {
+	          scope.clickEvent();
+        };
+        scope.hover = function(active) {
+	        scope.active = active;
+        };
+      },
+      template:
+        '<button title="{{ tooltip }}" ng-click="clickButton()" ng-mouseover="hover(true)" ng-mouseout="hover(false)"' +
+            ' class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only" ng-class="{\'ui-state-hover\' : active}">' +
+        	'<span class="ui-button-icon-primary ui-icon {{ iconClass }}"></span>' +
+        	'<span class="ui-button-text">{{ text }}</span>' +
+        '</button>',
+      replace: true
+    };
+  });  

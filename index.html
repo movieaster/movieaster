@@ -31,11 +31,11 @@
 						</autocomplete>
 					</div>
 					<div ng-switch-default>
-						<span style="font-size: 0.6em;" class="ui-buttonset">
+						<span class="ui-buttonset">
 							<input type="radio" class="ui-helper-hidden-accessible"><label class="ui-button ui-widget ui-state-default ui-button-text-only ui-corner-left" ng-class="{'ui-state-active' : (group.mode == 'table')}" ng-click="group.mode = 'table'"><span class="ui-button-text">Table</span></label>
 							<input type="radio" class="ui-helper-hidden-accessible"><label class="ui-button ui-widget ui-state-default ui-button-text-only ui-corner-right" ng-class="{'ui-state-active' : (group.mode == 'covers')}" ng-click="group.mode = 'covers'"><span class="ui-button-text">Covers</span></label>
 						</span>
-						<input style="height: 0.8em;" class="span3" type="text" ng-model="group.filter" placeholder="Filter"><span class="ui-icon ui-icon-cancel" style="display:inline-block" title="clear filter" ng-click="group.filter = '';"></span>
+						<input class="span3 movie_filter" type="text" ng-model="group.filter" placeholder="Filter"><span class="ui-icon ui-icon-cancel" style="display:inline-block;" title="clear filter" ng-click="group.filter = '';"></span>
 					</div>
 			    </div>
 				<div ng-switch on="group.mode">
@@ -85,7 +85,7 @@
 										<a href="http://www.itunes.com/movies/{{ movie.t2 }}" title="Buy on iTunes Store" target="_blank">
 											<img src="./web/img/itunes.gif">
 										</a>
-										<button ng-click="wishlist.removeItem(movie)" title="remove" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-trash"></span><span class="ui-button-text"></span></button>
+										<small-button click-event="wishlist.removeItem(movie)" text="" icon-class="ui-icon-trash" tooltip="Remove from Wishlist"></small-button>
 									</td>
 								</tr>						
 							</table>
@@ -128,9 +128,9 @@
 	
 	<div id="toolbar" class="ui-widget ui-widget-content ui-corner-all">
 		<div>
-			<button ng-click="refreshFolders()" ng-disabled="progressActive" title="Refresh all Folders" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-state-hover"><span class="ui-button-icon-primary ui-icon ui-icon-refresh"></span><span class="ui-button-text"></span></button>
-			<button ng-click="clearLocalStorage()" title="Clear LocalStorage" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-trash"></span><span class="ui-button-text"></span></button>
-			<button ng-click="settings()" title="Settings" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"><span class="ui-button-icon-primary ui-icon ui-icon-gear"></span><span class="ui-button-text"></span></button>
+			<small-button click-event="refreshFolders()" ng-disabled="progressActive" text="" icon-class="ui-icon-refresh" tooltip="Refresh all Folders"></small-button>
+			<small-button click-event="clearLocalStorage()" text="" icon-class="ui-icon-trash" tooltip="Clear LocalStorage"></small-button>
+			<small-button click-event="settings()" text="" icon-class="ui-icon-gear" tooltip="Settings"></small-button>
 		</div>
 		<div class="ui-widget">
 			<div class="ui-state-highlight ui-corner-all" ng-class="{'ui-state-error':msgWarning}" style="margin-top: 5px; padding: 0 .7em;">
