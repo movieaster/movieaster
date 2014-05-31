@@ -44,27 +44,21 @@ class TMDbFactory
 		return new TMDb($apiKey, $lang);
 	}
 	
-	// Deprecated
-	public static function createYAML()
-	{
-		return TMDbFactory::createInstance();
-	}
-	
 	public static function createMoviesByNameAndYear($name, $year)
 	{
-		return TMDbFactory::createInstance();
+		//TODO
 	}
 	
 	public static function createMoviesByName($name)
 	{
-		return TMDbFactory::createInstance();
+		//TODO
 	}
 	
 	public static function createMovieInfoById($tmdbId)
 	{
 		$movieInfo = new MovieInfo();
 		$tmdbResult = TMDbFactory::createInstance()->getMovie($tmdbId);
-		if($tmdbResult == "Nothing found." || $tmdbResult["original_title"] == "") {
+		if($tmdbResult == "Nothing found." || $tmdbResult["title"] == "") {
 			return $movieInfo;
 		}
 		$movieInfo->name = $tmdbResult["title"];
