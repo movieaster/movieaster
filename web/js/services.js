@@ -1,7 +1,7 @@
 angular.module('movieaster.services', [])
-    .factory('movieService', function ($http) {
-        var reloadMovies = function (idsMap, oldMovies, successCallback, errorCallback) {
-	        var storagePrefix = "movie_";
+	.factory('movieService', function ($http) {
+		var reloadMovies = function (idsMap, oldMovies, successCallback, errorCallback) {
+			var storagePrefix = "movie_";
 			var newIds = [];
 			var allIds = [];
 			allIds = allIds.concat(idsMap["newest"], idsMap["watched"], idsMap["favorites"], idsMap["archived"]);
@@ -12,7 +12,7 @@ angular.module('movieaster.services', [])
 			});
 			var loadMovieFromSessionStorage = function(ids) {
 				var movies = [];
-		        angular.forEach(ids, function(id) {
+				angular.forEach(ids, function(id) {
 					movies.push(JSON.parse(localStorage.getItem(storagePrefix + id)));
 				});
 				return movies;
@@ -33,32 +33,32 @@ angular.module('movieaster.services', [])
 					});
 					successCallback(createResult(oldMovies, idsMap));
 				}).error(errorCallback);
-			}		        
-        };
-        return {        
-            movies: function (oldMovies, successCallback, errorCallback) {
+			}				
+		};
+		return {		
+			movies: function (oldMovies, successCallback, errorCallback) {
 				$http.jsonp(PATH + '/movie/ids?callback=JSON_CALLBACK').success(function (idsMap) {
 					reloadMovies(idsMap, oldMovies, successCallback, errorCallback);
 				}).error(errorCallback);
-            },
-            watched: function (id, oldMovies, successCallback, errorCallback) {
-                $http.jsonp(PATH + '/movie/' + id + '/switch/watched?callback=JSON_CALLBACK').success(function (idsMap) {
+			},
+			watched: function (id, oldMovies, successCallback, errorCallback) {
+				$http.jsonp(PATH + '/movie/' + id + '/switch/watched?callback=JSON_CALLBACK').success(function (idsMap) {
 					reloadMovies(idsMap, oldMovies, successCallback, errorCallback);
 				}).error(errorCallback);
-            },
-            favorites: function (id, oldMovies, successCallback, errorCallback) {
-                $http.jsonp(PATH + '/movie/' + id + '/switch/favorites?callback=JSON_CALLBACK').success(function (idsMap) {
+			},
+			favorites: function (id, oldMovies, successCallback, errorCallback) {
+				$http.jsonp(PATH + '/movie/' + id + '/switch/favorites?callback=JSON_CALLBACK').success(function (idsMap) {
 					reloadMovies(idsMap, oldMovies, successCallback, errorCallback);
 				}).error(errorCallback);
-            },
-            archived: function (id, oldMovies, successCallback, errorCallback) {
-                $http.jsonp(PATH + '/movie/' + id + '/switch/archived?callback=JSON_CALLBACK').success(function (idsMap) {
+			},
+			archived: function (id, oldMovies, successCallback, errorCallback) {
+				$http.jsonp(PATH + '/movie/' + id + '/switch/archived?callback=JSON_CALLBACK').success(function (idsMap) {
 					reloadMovies(idsMap, oldMovies, successCallback, errorCallback);
 				}).error(errorCallback);
-            }
-        };
-    })
-    .factory('folderService', function($http) {
+			}
+		};
+	})
+	.factory('folderService', function($http) {
 		var notFound = new Array();
 		var numNew = null;
 		var foundCounter = 0;
@@ -71,19 +71,19 @@ angular.module('movieaster.services', [])
 					doneCallback();
 				});
 		};
+		/*
 		var downloadAllImages = function(id, infoMsgCallback, successCallback) {
-			$http.jsonp(PATH + '/folder/' + id + '/download/image/thumb?callback=JSON_CALLBACK').success(function(thumbData) {
-				downloadImage(id, "folder", infoMsgCallback, function() {
-					downloadImage(id, "backdrop1", infoMsgCallback, function() {
-						downloadImage(id, "backdrop2", infoMsgCallback, function() {
-							downloadImage(id, "backdrop3", infoMsgCallback, function() {
-								successCallback("Images downloaded.");
-							});	
-						});	
-					});	
+			downloadImage(id, "folder", infoMsgCallback, function() {
+				downloadImage(id, "backdrop1", infoMsgCallback, function() {
+					downloadImage(id, "backdrop2", infoMsgCallback, function() {
+						downloadImage(id, "backdrop3", infoMsgCallback, function() {
+							successCallback("Images downloaded.");
+						});
+					});
 				});
 			}).error(function() { infoMsgCallback("error download thumb image for folder " + id); } );
 		};
+		*/
 		var downloadMetaInfos = function(id, successCallback, errorCallback) {
 			$http.jsonp(PATH + '/folder/' + id + '/download/meta?callback=JSON_CALLBACK').success(function(movieData) {
 				if(movieData["f"] == 1) {
@@ -91,10 +91,10 @@ angular.module('movieaster.services', [])
 				} else {
 					successCallback(movieData["e"] + ": " + movieData["n"]);
 					notFound.push(movieData["n"]);		
-				}		
+				}
 			}).error(function() {
 				errorCallback("TMBb Meta infos for Folder " + id);
-			});	
+			});
 		};
 		var recursiveProcessTmdbRequests = function(infoMsgCallback, doneCallback, errorCallback) {
 			$http.jsonp(PATH + '/folder/todo/next?callback=JSON_CALLBACK').success(function(folderData) {
@@ -115,27 +115,27 @@ angular.module('movieaster.services', [])
 				}
 			}).error(errorCallback);	
 		};
-        return {
-	        refresh: function(infoMsgCallback, doneCallback, errorMsgCallback) {
+		return {
+			refresh: function(infoMsgCallback, doneCallback, errorMsgCallback) {
 				notFound = new Array();
 				foundCounter = 0;
 				infoMsgCallback("refresh filesystem...");
 				$http.jsonp(PATH + '/folder/refresh?callback=JSON_CALLBACK').success(function(data) {
 					infoMsgCallback("New: " + data["n"]  + " / Deleted: " + data["d"] + " / Old: " + data["o"]);
 					numNew = data["n"];
-			        recursiveProcessTmdbRequests(infoMsgCallback, doneCallback, errorMsgCallback);
+					recursiveProcessTmdbRequests(infoMsgCallback, doneCallback, errorMsgCallback);
 				}).error(function() {
 					errorMsgCallback("refresh folder.");	
 				});
-            },
-            cancel: function(successCallback) {
-	            //folderWorker.terminate();
-            }
-        };
-    })
+			},
+			cancel: function(successCallback) {
+				//folderWorker.terminate();
+			}
+		};
+	})
 	.factory('wishlistService', function($http) {
 		var reloadWishlist = function (allIds, successCallback, errorCallback) {
-            var storagePrefix = "wishlist_";
+			var storagePrefix = "wishlist_";
 			var newIds = [];
 			angular.forEach(allIds, function(id) {
 				if(localStorage.getItem(storagePrefix + id) == null) {
@@ -144,7 +144,7 @@ angular.module('movieaster.services', [])
 			});
 			var loadMoviesFromWishlistSessionStorage = function(ids) {
 				var movies = [];
-		        angular.forEach(ids, function(id) {
+				angular.forEach(ids, function(id) {
 					movies.push(JSON.parse(localStorage.getItem(storagePrefix + id)));
 				});
 				return movies;
@@ -159,50 +159,50 @@ angular.module('movieaster.services', [])
 					successCallback(loadMoviesFromWishlistSessionStorage(allIds));
 				}).error(errorCallback);
 			}
-        };
-        		
-	    return {
-            movies: function (successCallback, errorCallback) {
+		};
+				
+		return {
+			movies: function (successCallback, errorCallback) {
 				$http.jsonp(PATH + '/wishlist/ids?callback=JSON_CALLBACK').success(function (allIds) {
 					reloadWishlist(allIds, successCallback, errorCallback);
 				}).error(errorCallback);
-            },
-	        AutoComplete: function(request, response) {
-		        // based on: http://jsfiddle.net/ZguhP/
-	            var retArray, dataToPost;
-	            dataToPost = {
-	                term: request.term,
-	                callback: 'JSON_CALLBACK'
-	            };
-	            config = {
-	                method: 'JSONP',
-	                url: PATH + '/wishlist/tmdb_query',
-	                params: dataToPost
-	            };
-	            $http.jsonp(config.url, config).
-	            success(function(data, status, headers, config) {
-	                retArray = data.map(function(item) {
-	                    return {
-	                        label: item.label,
-	                        value: item.id
-	                    }
-	                });
-	                response(retArray);
-	            }).
-	            error(function(data, status, headers, config) {
-	                response([]);
-	            });
-	        },
-	        create: function(tmdbId, successCallback, errorCallback) {
+			},
+			AutoComplete: function(request, response) {
+				// based on: http://jsfiddle.net/ZguhP/
+				var retArray, dataToPost;
+				dataToPost = {
+					term: request.term,
+					callback: 'JSON_CALLBACK'
+				};
+				config = {
+					method: 'JSONP',
+					url: PATH + '/wishlist/tmdb_query',
+					params: dataToPost
+				};
+				$http.jsonp(config.url, config).
+				success(function(data, status, headers, config) {
+					retArray = data.map(function(item) {
+						return {
+							label: item.label,
+							value: item.id
+						}
+					});
+					response(retArray);
+				}).
+				error(function(data, status, headers, config) {
+					response([]);
+				});
+			},
+			create: function(tmdbId, successCallback, errorCallback) {
 				$http.jsonp(PATH + '/wishlist/' + tmdbId + '/create?callback=JSON_CALLBACK').success(function (allIds) {
-			        reloadWishlist(allIds, successCallback, errorCallback);
+					reloadWishlist(allIds, successCallback, errorCallback);
 				}).error(errorCallback);
-	        },
-	        remove: function(id, successCallback, errorCallback) {
+			},
+			remove: function(id, successCallback, errorCallback) {
 				$http.jsonp(PATH + '/wishlist/' + id + '/remove?callback=JSON_CALLBACK').success(function (allIds) {
 					localStorage.removeItem("wishlist_" + id);
-			        reloadWishlist(allIds, successCallback, errorCallback);
+					reloadWishlist(allIds, successCallback, errorCallback);
 				}).error(errorCallback);
-	        }
-	    }
+			}
+		}
 	});
