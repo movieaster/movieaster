@@ -71,7 +71,6 @@ angular.module('movieaster.services', [])
 					doneCallback();
 				});
 		};
-		/*
 		var downloadAllImages = function(id, infoMsgCallback, successCallback) {
 			downloadImage(id, "folder", infoMsgCallback, function() {
 				downloadImage(id, "backdrop1", infoMsgCallback, function() {
@@ -83,7 +82,6 @@ angular.module('movieaster.services', [])
 				});
 			}).error(function() { infoMsgCallback("error download thumb image for folder " + id); } );
 		};
-		*/
 		var downloadMetaInfos = function(id, successCallback, errorCallback) {
 			$http.jsonp(PATH + '/folder/' + id + '/download/meta?callback=JSON_CALLBACK').success(function(movieData) {
 				if(movieData["f"] == 1) {
@@ -102,18 +100,20 @@ angular.module('movieaster.services', [])
 					foundCounter++;
 					infoMsgCallback("Folder " + foundCounter + "/" + numNew + ": " + folderData["n"] + "...");
 					downloadMetaInfos(folderData["i"], function(msg) {
-							infoMsgCallback('Failed download: ' + msg);
-							downloadAllImages(folderData["i"], function(msg) {
-								infoMsgCallback(msg);
-							},
-							function() {
-								recursiveProcessTmdbRequests(infoMsgCallback, doneCallback, errorCallback);
-							}, errorCallback);
+						doneCallback();
+						/*
+						downloadAllImages(folderData["i"], function(msg) {
+							infoMsgCallback(msg);
+						},
+						function() {
+							recursiveProcessTmdbRequests(infoMsgCallback, doneCallback, errorCallback);
 						}, errorCallback);
+						*/
+					}, errorCallback);
 				} else {
-					doneCallback();	
+					doneCallback();
 				}
-			}).error(errorCallback);	
+			}).error(errorCallback);
 		};
 		return {
 			refresh: function(infoMsgCallback, doneCallback, errorMsgCallback) {
