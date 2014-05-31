@@ -7,7 +7,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Response;
-
+use Movieaster\MovieManagerBundle\Component\JSONUtil;
 
 /**
  * Movie controller.
@@ -32,10 +32,11 @@ class MovieController extends Controller {
      */
     public function idsAction() {
         $em = $this->getDoctrine()->getEntityManager();
-        $query = "SELECT m.id, m.archived, m.watched, m.favorites FROM MovieasterMovieManagerBundle:Movie m WHERE m.found=:found";
+        $query = "SELECT m.id, m.archived, m.watched, m.favorites"
+                . " FROM MovieasterMovieManagerBundle:Movie m WHERE m.found=:found";
         $movies = $em->createQuery($query)->setParameter('found', true)->execute();
         $values = $this->toStatusMap($movies);
-        return $this->createJsonResponse($values);
+        return JSONUtil::createJsonResponse($values);
     }
 
     /**
@@ -45,13 +46,12 @@ class MovieController extends Controller {
      */
     public function infosAction() {
         $ids = explode(",", $_REQUEST['ids']);
-        $repo = $this->getMovieRepository();
-        $movies = $repo->findBy(array('id' => $ids));
+        $movies = $this->getMovieRepository()->findBy(array('id' => $ids));
         $values = array();
         foreach($movies as $movie) {
             $values[] = $this->entityToJson($movie);
         }
-        return $this->createJsonResponse($values);
+        return JSONUtil::createJsonResponse($values);
     }
 
     /**
@@ -61,7 +61,7 @@ class MovieController extends Controller {
      */
     public function jsonAction($id) {
         $movie = $this->loadMovie($id);
-        return $this->createJsonResponse($this->entityToJson($movie));
+        return JSONUtil::createJsonResponse($this->entityToJson($movie));
     }
     
     /**
@@ -71,11 +71,9 @@ class MovieController extends Controller {
      */
     public function switchWatchedAction($id) {     
         //TODO: move to watched folder configured
-
         $movie = $this->loadMovie($id);
         $movie->setWatched(!$movie->getWatched());
         $this->update($movie);
-        
         return $this->idsAction();
     }       
 
@@ -86,11 +84,9 @@ class MovieController extends Controller {
      */
     public function switchFavoritesAction($id) {
         //TODO: create symlink in configured folder
-
         $movie = $this->loadMovie($id);
         $movie->setFavorites(!$movie->getFavorites());
         $this->update($movie);
-        
         return $this->idsAction();
     }
     
@@ -101,16 +97,14 @@ class MovieController extends Controller {
      */
     public function switchArchivedAction($id) {
         //TODO: move to configured archive folder/drive        
-
         $movie = $this->loadMovie($id);
         $movie->setArchived(!$movie->getArchived());
         $movie->setWatched(false);
         if ($movie->getFavorites()) {
-            //remove favorites symlink
+            //TODO: remove favorites symlink
             $movie->setFavorites(false);
         }
         $this->update($movie);
-        
         return $this->idsAction();
     }    
 
@@ -127,7 +121,7 @@ class MovieController extends Controller {
     private function loadMovie($id) {
         $repo = $this->getMovieRepository();
         $movie = $repo->find($id);
-        if (!$movie) {
+        if(!$movie) {
             throw $this->createNotFoundException('Unable to find Movie entity.');
         }
         return $movie;
@@ -141,9 +135,9 @@ class MovieController extends Controller {
         $statusMap["archived"] = array();
         foreach($movies as $movie) {
             $movieId = $movie["id"];
-            if ($movie["archived"]) {
+            if($movie["archived"]) {
                 $statusMap["archived"][] = $movieId;
-            } else if ($movie["watched"]) {
+            } else if($movie["watched"]) {
                 $statusMap["watched"][] = $movieId;
             } else {
                 $statusMap["newest"][] = $movieId;
@@ -179,20 +173,5 @@ class MovieController extends Controller {
         $values["p"] = $entity->getPath()->getName();
         return $values; 
     }
-    
-    private function createJsonResponse($data) {
-        $response = new Response();
-        $callbackFunction = $_REQUEST['callback'];
-        $content = "";
-        if($callbackFunction != null) {
-            $content .= $callbackFunction . "(";
-        }
-        $content .= json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-        if($callbackFunction != null) {
-            $content .= ");";
-        }
-        $response->setContent($content);
-        return $response;
-    }
-    
+
 }

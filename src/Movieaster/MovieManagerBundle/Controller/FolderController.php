@@ -31,8 +31,8 @@ class FolderController extends Controller
     {
 	    return new Response("not in use");
     }
-    	
-   	/**
+
+	/**
      * Refresh all Folder entity.
      *
      * @Route("/refresh", name="folder_refresh")
@@ -43,7 +43,7 @@ class FolderController extends Controller
 		$logger = $this->get('logger');
 		$logger->debug("Refresh all Movies:");
 
-   		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getEntityManager();
 		$paths = $em->getRepository('MovieasterMovieManagerBundle:Path')->findAll();
 
 		// just for the statistics
@@ -62,21 +62,21 @@ class FolderController extends Controller
 			foreach ($finder as $file) {
 				if($file->getFilename() != "@eaDir")  {
 					$logger->debug("folder: " . $file->getFilename() . " (archived: " . $modeArchived . ")");
-			 		$enity = $em->getRepository('MovieasterMovieManagerBundle:Movie')->findOneBy(array('nameFolder' => $file->getFilename(), 'path' => $path->getId(), 'archived' => $modeArchived));
-			 		if ($enity) {
-				 		$logger->debug("still exist in DB");
-			 			$enity->setUpdated(true);
-			 			$em->flush();
-			 			$countOld++;
-			 		} else {
-				 		$logger->debug("create new DB record");
-			 			$folder = new Movie();
-						$folder->setNameFolder($file->getFilename());			 			
-			 			$folder->setUpdated(true);
-			 			$folder->setFound(false);
-			 			$folder->setArchived($modeArchived);			 			
-			 			$folder->setPath($path);
-			 			$em->persist($folder);
+					$enity = $em->getRepository('MovieasterMovieManagerBundle:Movie')->findOneBy(array('nameFolder' => $file->getFilename(), 'path' => $path->getId(), 'archived' => $modeArchived));
+					if ($enity) {
+						$logger->debug("still exist in DB");
+						$enity->setUpdated(true);
+						$em->flush();
+						$countOld++;
+					} else {
+						$logger->debug("create new DB record");
+						$folder = new Movie();
+						$folder->setNameFolder($file->getFilename());
+						$folder->setUpdated(true);
+						$folder->setFound(false);
+						$folder->setArchived($modeArchived);
+						$folder->setPath($path);
+						$em->persist($folder);
 						$em->flush();
 						$countNew++;
 					}
@@ -114,7 +114,7 @@ class FolderController extends Controller
 
 	    $logger = $this->get('logger');
 		$logger->debug("Check for ToDo Folders:");
-	    		
+
         $em = $this->getDoctrine()->getEntityManager();
 		$entity = $em->getRepository('MovieasterMovieManagerBundle:Movie')->findOneBy(array('found' => false, 'archived' => $modeArchived));
         if (!$entity) {
@@ -142,13 +142,13 @@ class FolderController extends Controller
 		$em = $this->getDoctrine()->getEntityManager();
 
         $movie = $em->getRepository('MovieasterMovieManagerBundle:Movie')->find($id);
- 		if($movie) {
-	 		$logger->debug("Get TmDB Meta Infos for Folder: " . $movie->getNameFolder());
+		if($movie) {
+			$logger->debug("Get TmDB Meta Infos for Folder: " . $movie->getNameFolder());
 			$tmdbApi = TMDbFactory::createInstance();
 			$logger->debug("TmDB API.");
 
-	 		//add new movies
-	 		preg_match('/(?P<name>\w+) \((?P<year>\d+)\)/', $movie->getNameFolder(), $movieFolderInfo);
+			//add new movies
+			preg_match('/(?P<name>\w+) \((?P<year>\d+)\)/', $movie->getNameFolder(), $movieFolderInfo);
 			$moviesResult = $tmdbApi->searchMovie($movieFolderInfo["name"], 1, FALSE, $movieFolderInfo["year"], NULL);
 			
 			$logger->debug("TmDB movies result: ", $moviesResult);
@@ -156,7 +156,7 @@ class FolderController extends Controller
 			
 			$movieInfo = $tmdbApi->getMovie($tmdbId);
 			if($movieInfo != "Nothing found." && $movieInfo["original_title"] != "") {
-				$logger->debug("TmDB movies info: ", $movieInfo);					
+				$logger->debug("TmDB movies info: ", $movieInfo);
 				$movie->setFound(true);
 				//create new movie record
 				$movie->setName($movieInfo["title"]);
@@ -277,11 +277,11 @@ class FolderController extends Controller
 		$logger->debug("download Movie Thumb #id: " . $id);	
 		$found = 0;
 		$em = $this->getDoctrine()->getEntityManager();
-		$movie = $this->loadMovie($id, $em);
+		$movie = $this->loadMovie($id);
 		if($movie) {
-			$logger->debug("download Movie Thumb: " . $movie->getName());	
+			$logger->debug("download Movie Thumb: " . $movie->getName());
 			$imgUrl = $movie->getThumb();
-			$logger->debug("download Movie Thumb imgUrl: " . $imgUrl);	
+			$logger->debug("download Movie Thumb imgUrl: " . $imgUrl);
 			if($imgUrl != "") {
 				$content = file_get_contents($imgUrl); 
 				if ($content !== false) {
@@ -302,7 +302,7 @@ class FolderController extends Controller
      */
     public function downloadImgFolderAction($id)
     {
-		$movie = $this->loadMovie($id, $this->getDoctrine()->getEntityManager());
+		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getPoster(), $movie, 'folder.jpg');
 		return $this->toJsonResponse(array("f" => $found)); 
     }    
@@ -314,7 +314,7 @@ class FolderController extends Controller
      */
     public function downloadImgBackdrop1Action($id)     
     {     
-		$movie = $this->loadMovie($id, $this->getDoctrine()->getEntityManager());
+		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getBackdrop1(), $movie, 'backdrop.jpg');
 		return $this->toJsonResponse(array("f" => $found)); 
     }
@@ -326,7 +326,7 @@ class FolderController extends Controller
      */
     public function downloadImgBackdrop2Action($id)
     {     
-		$movie = $this->loadMovie($id, $this->getDoctrine()->getEntityManager());
+		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getBackdrop2(), $movie, 'backdrop1.jpg');
 		return $this->toJsonResponse(array("f" => $found)); 
     }
@@ -338,7 +338,7 @@ class FolderController extends Controller
      */
     public function downloadImgBackdrop3Action($id)
     {
-		$movie = $this->loadMovie($id, $this->getDoctrine()->getEntityManager());
+		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getBackdrop3(), $movie, 'backdrop2.jpg');
 		return $this->toJsonResponse(array("f" => $found)); 
     }
@@ -362,7 +362,7 @@ class FolderController extends Controller
 		if(!file_exists($targetPath)) {
 			$content = file_get_contents($url); 
 			if ($content !== false) {
-				return file_put_contents($targetPath, $content);	
+				return file_put_contents($targetPath, $content);
 			}
 		} else {
 			return 1;
@@ -370,8 +370,9 @@ class FolderController extends Controller
 		return 0;
 	}
 	
-    private function loadMovie($id, $em)
+    private function loadMovie($id)
     {
+	    $em = $this->getDoctrine()->getEntityManager();
         $movie = $em->getRepository('MovieasterMovieManagerBundle:Movie')->find($id);
         if (!$movie) {
             throw $this->createNotFoundException('Unable to find Movie entity.');

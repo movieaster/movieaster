@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDb;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDbFactory;
 use Movieaster\MovieManagerBundle\Entity\Wishlist;
+use Movieaster\MovieManagerBundle\Component\JSONUtil;
 
 /**
  * Wishlist controller.
@@ -18,7 +19,7 @@ use Movieaster\MovieManagerBundle\Entity\Wishlist;
  */
 class WishlistController extends Controller
 {
-	
+        
     /**
      * Placeholder for root path.
      *
@@ -26,7 +27,7 @@ class WishlistController extends Controller
      */
     public function indexAction()
     {
-	    return new Response("not in use");
+        return new Response("not in use");
     }
     
     /**
@@ -37,12 +38,12 @@ class WishlistController extends Controller
     public function idsAction()
     {
         $em = $this->getDoctrine()->getEntityManager();
-	    $result = $em->createQuery('SELECT m.id FROM MovieasterMovieManagerBundle:Wishlist m')->execute();
+        $result = $em->createQuery('SELECT m.id FROM MovieasterMovieManagerBundle:Wishlist m')->execute();
         $values = array();
         foreach($result as $movie) {
-			$values[] = $movie["id"];
-		}        
-		return $this->toJsonResponse($values);
+            $values[] = $movie["id"];
+        }        
+        return JSONUtil::createJsonResponse($values);
     }    
 
     /**
@@ -52,15 +53,15 @@ class WishlistController extends Controller
      */
     public function infosAction()
     {
-        $ids = explode(",", $_REQUEST['ids']);//$request->query->get('ids'));
-        $em = $this->getDoctrine()->getEntityManager();	
-		$repo = $em->getRepository('MovieasterMovieManagerBundle:Wishlist');	
-		$movies = $repo->findBy(array('id' => $ids));
-		$values = array();
-	    foreach($movies as $movie) {
-			$values[] = $this->entityToJson($movie);
-		}
-		return $this->toJsonResponse($values);
+        $ids = explode(",", $_REQUEST['ids']);
+        $em = $this->getDoctrine()->getEntityManager();    
+        $repo = $em->getRepository('MovieasterMovieManagerBundle:Wishlist');    
+        $movies = $repo->findBy(array('id' => $ids));
+        $values = array();
+        foreach($movies as $movie) {
+            $values[] = $this->entityToJson($movie);
+        }
+        return JSONUtil::createJsonResponse($values);
     }
     
     /**
@@ -77,7 +78,7 @@ class WishlistController extends Controller
         }
         $em->remove($entity);
         $em->flush();       
-		return $this->idsAction();
+        return $this->idsAction();
     }    
     
     /**
@@ -85,28 +86,24 @@ class WishlistController extends Controller
      *
      * @Route("/tmdb_query", name="wishlist_tmdb_search_query")
      */
-    public function tndbQueryAction()
+    public function tmdbQueryAction()
     {
-	    $request = $this->getRequest();
-	    $query = $request->query->get('term');
-
-		$tmdbYAML = TMDbFactory::createYAML();
-				
-		$moviesResultString = $tmdbYAML->searchMovie($query, TMDb::JSON);
-		$moviesResult = json_decode($moviesResultString, true);
-		$values = array();
-	    foreach ($moviesResult as &$value) {
-		    $tmdID = $value['id'];
-			$nameLocalized = $value['name'];
-			$nameOriginal = $value['original_name'];
-			$value = $nameLocalized;
-			$label = $value;
-			if($label != $nameOriginal) {
-				$label .= " / " . $nameOriginal;
-			}
-		    $values[] = array('id' => $tmdID, 'label' => $label, 'value' => $value);
-	    }
-		return $this->toJsonResponse($values);
+        $request = $this->getRequest();
+        $query = $request->query->get('term');
+        $tmdbResult = TMDbFactory::createInstance()->searchMovie($query);       
+        $values = array();
+        foreach ($tmdbResult["results"] as $movie) {
+            $tmdID = $movie['id'];
+            $nameLocalized = $movie['title'];
+            $nameOriginal = $movie['original_title'];
+            $value = $nameLocalized;
+            $label = $value;
+            if($label != $nameOriginal) {
+                $label .= " / " . $nameOriginal;
+            }
+            $values[] = array('id' => $tmdID, 'label' => $label, 'value' => $value);
+        }
+        return JSONUtil::createJsonResponse($values);
     }    
 
     /**
@@ -116,109 +113,36 @@ class WishlistController extends Controller
      */
     public function tmdbCreateAction($id)
     {
-		$logger = $this->get('logger');
-		$logger->debug("==========>Get Meta Infos for TMDb ID: " . $id);
-	    
+        $movieInfo = TMDbFactory::createMovieInfoById($id);
+        $wishlist = new Wishlist();
+        $wishlist->setName($movieInfo->name);
+        $wishlist->setNameOriginal($movieInfo->nameOriginal);
+        $wishlist->setNameAlternative($movieInfo->nameAlternative);
+        $wishlist->setReleased($movieInfo->released);
+        $wishlist->setOverview($movieInfo->overview);
+        $wishlist->setImdbId($movieInfo->imdbId);
+        $wishlist->setTmdbId($movieInfo->tmdbId);
+        $wishlist->setHomepage($movieInfo->homepage);
+        $wishlist->setTrailer($movieInfo->trailer);
+        $wishlist->setRatingTmdb($movieInfo->ratingTmdb);
+        $wishlist->setVotesTmdb($movieInfo->votesTmdb);
+        $wishlist->setGenres($movieInfo->genres);
+        $wishlist->setActors($movieInfo->actors);
+        $wishlist->setDirectors($movieInfo->directors);
+        $wishlist->setWriters($movieInfo->writers);
+        $wishlist->setThumbInline($movieInfo->thumbInline);
+        $wishlist->setThumb($movieInfo->thumb);
+        $wishlist->setPoster($movieInfo->poster);
+        $wishlist->setBackdrop1($movieInfo->backdrop1);
+        $wishlist->setBackdrop2($movieInfo->backdrop2);
+        $wishlist->setBackdrop3($movieInfo->backdrop3);
         $em = $this->getDoctrine()->getEntityManager();
-
-		$tmdbYAML = TMDbFactory::createYAML();
-		$movieInfoString = $tmdbYAML->getMovie($id, TMDb::TMDB,TMDb::JSON);
-		$movieInfo = json_decode($movieInfoString, true);
-				
-		if(count($movieInfo) >= 0 && $movieInfo[0] != "Nothing found." && $movieInfo[0]["original_name"] != "") {
-			$logger->debug("==========>TMDb movies info: ", $movieInfo);					
-			$movieInfo = $movieInfo[0];
-			//create new movie record
-			$wishlist = new Wishlist();
-			$wishlist->setName("".$movieInfo["name"]);
-			$wishlist->setNameOriginal("".$movieInfo["original_name"]);
-			$wishlist->setNameAlternative("".$movieInfo["alternative_name"]);    
-			$wishlist->setReleased(new \DateTime($movieInfo["released"]));
-			$wishlist->setOverview("".$movieInfo["overview"]);
-			$wishlist->setImdbId("".$movieInfo["imdb_id"]);
-			$wishlist->setTmdbId("".$movieInfo["id"]);
-			$wishlist->setHomepage("".$movieInfo["homepage"]);
-			$wishlist->setTrailer("".$movieInfo["trailer"]);
-			$wishlist->setRatingTmdb("".$movieInfo["rating"]);
-			$wishlist->setVotesTmdb("".$movieInfo["votes"]);
-			$genres = $wishlist->getGenres();	
-			for($i=0;$i<count($movieInfo["genres"])-1;$i++) {
-				$name = $movieInfo["genres"][$i]["name"];
-				if($genres != "") {
-					$genres .= ", ";
-				}
-				$genres .= $name;
-			}
-			$wishlist->setGenres($genres);
-			$actors = $wishlist->getActors();
-			$directors = $wishlist->getDirectors();
-			$writers = $wishlist->getWriters();
-			for($i=0;$i<count($movieInfo["cast"])-1;$i++) {
-				$name = $movieInfo["cast"][$i]["name"];
-				if($movieInfo["cast"][$i]["job"] == "Actor" && $movieInfo["cast"][$i]["profile"] != "") {
-					if($actors != "") {
-						$actors .= ", ";
-					}
-					$actors .= $name;
-				} else if($movieInfo["cast"][$i]["job"] == "Director") {
-					if($directors != "") {
-						$directors .= ", ";
-					}
-					$directors .= $name;
-				} else if($movieInfo["cast"][$i]["job"] == "Editor") {
-					if($writers != "") {
-						$writers .= ", ";
-					}
-					$writers .= $name;
-				}
-			}
-			$wishlist->setActors($actors);
-			$wishlist->setDirectors($directors);
-			$wishlist->setWriters($writers);
-			$wishlist->setThumbInline("");				
-			$thumbUrl="";
-			$folderUrl="";
-			$backdropUrls=array();
-			for($i=0;$i<count($movieInfo["posters"])-1;$i++) {
-				if($folderUrl == "" && $movieInfo["posters"][$i]["image"]["size"] == "original") {
-					$folderUrl = $movieInfo["posters"][$i]["image"]["url"];
-				}
-				if($thumbUrl == "" && $movieInfo["posters"][$i]["image"]["size"] == "thumb") {
-					$thumbUrl = $movieInfo["posters"][$i]["image"]["url"];
-				}
-			}
-			$backdropUrls[0]="";
-			$backdropUrls[1]="";
-			$backdropUrls[2]="";
-			for($i=0,$countBackdrops=0; $countBackdrops<4 && $i<count($movieInfo["backdrops"])-1; $i++) {
-				if($movieInfo["backdrops"][$i]["image"]["size"] == "original") {
-					$backdropUrls[$countBackdrops]= $movieInfo["backdrops"][$i]["image"]["url"];
-					$countBackdrops++;								
-				}
-			}
-			$wishlist->setThumb($thumbUrl);
-			$wishlist->setPoster($folderUrl);
-			$wishlist->setBackdrop1($backdropUrls[0]);
-			$wishlist->setBackdrop2($backdropUrls[1]);
-			$wishlist->setBackdrop3($backdropUrls[2]);
-			
-			$imgUrl = $wishlist->getThumb();
-			if($imgUrl != "") {
-				$content = file_get_contents($imgUrl); 
-				if ($content !== false) {
-					$wishlist->setThumbInline("data:image/" . substr($imgUrl, -3) . ";base64," . base64_encode($content));
-					$em->flush();
-					$found = 1;
-				}
-			}
-			
-			$em->persist($wishlist);
-			$em->flush();			
-    	}
-    	return $this->idsAction();
-	}	
-	        
-	private function entityToJson($entity) {
+        $em->persist($wishlist);
+        $em->flush();            
+        return $this->idsAction();
+    }    
+            
+    private function entityToJson($entity) {
         $values["i"] = $entity->getId();
         $values["c"] = $entity->getThumbInline();
         $values["t"] = $entity->getName();
@@ -233,26 +157,12 @@ class WishlistController extends Controller
         $values["ti"] = $entity->getTmdbId();
         $values["ii"] = $entity->getImdbId();
         $values["h"] = $entity->getHomepage();
-        $values["tr"] = str_replace("http://www.youtube.com/watch?v=", "http://www.youtube-nocookie.com/embed/", $entity->getTrailer());
+        $values["tr"] = str_replace("http://www.youtube.com/watch?v=",
+                                    "http://www.youtube-nocookie.com/embed/", $entity->getTrailer());
         $values["b1"] = $entity->getBackdrop1();
         $values["b2"] = $entity->getBackdrop2();
         $values["b3"] = $entity->getBackdrop3();
-		return $values; 
-	}
-	
-	private function toJsonResponse($data) {
-		$response = new Response();
-		$callbackFunction = $_REQUEST['callback']; //$request->query->get('callback');
-		$content = "";
-		if($callbackFunction != null) {
-			$content .= $callbackFunction . "(";
-		}
-		$content .= json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-		if($callbackFunction != null) {
-			$content .= ");";
-		}
-		$response->setContent($content);
-		return $response;
-	}
+        return $values; 
+    }
 
 }
