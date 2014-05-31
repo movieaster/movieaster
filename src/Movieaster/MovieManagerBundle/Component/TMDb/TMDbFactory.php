@@ -44,14 +44,23 @@ class TMDbFactory
 		return new TMDb($apiKey, $lang);
 	}
 	
-	public static function createMoviesByNameAndYear($name, $year)
+	public static function getIdsByNameAndYear($name, $year)
 	{
-		//TODO
+		$movieIds = array();
+		if($year != NULL) {
+			$moviesResult = TMDbFactory::createInstance()->searchMovie($name, 1, FALSE, $year);
+		} else {
+			$moviesResult = TMDbFactory::createInstance()->searchMovie($name);
+		}
+		foreach ($moviesResult["results"] as $movie) {
+			$movieIds[] = $movie["id"];
+		}
+		return $movieIds;
 	}
 	
-	public static function createMoviesByName($name)
+	public static function getIdsByName($name)
 	{
-		//TODO
+		return TMDbFactory::getIdsByNameAndYear($name, NULL);
 	}
 	
 	public static function createMovieInfoById($tmdbId)

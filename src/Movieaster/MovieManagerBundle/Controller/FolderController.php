@@ -8,13 +8,13 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Finder\Finder;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDb;
 use Movieaster\MovieManagerBundle\Component\TMDb\TMDbFactory;
 use Movieaster\MovieManagerBundle\Entity\Movie;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Movieaster\MovieManagerBundle\Component\JSONUtil;
+use Movieaster\MovieManagerBundle\Component\FileSystemUtil;
 
 /**
  * Folder controller.
@@ -40,70 +40,52 @@ class FolderController extends Controller
 	 */
 	public function refreshAction()
 	{
-		$modeArchived = false;
-		$logger = $this->get('logger');
-		$logger->debug("Refresh all Movies:");
-
 		$em = $this->getDoctrine()->getEntityManager();
 		$paths = $em->getRepository('MovieasterMovieManagerBundle:Path')->findAll();
-
-		// just for the statistics
 		$countNew = 0;
 		$countOld = 0;
-		
 		foreach ($paths as $path) {
-			$logger->debug("Refresh Path: " . $path->getPath());
-			
-			// mark all still existing movie folder records for an update check
-			$em->createQuery('UPDATE MovieasterMovieManagerBundle:Movie f SET f.updated=:updated WHERE f.path=:path and f.archived=:archived')->setParameter('updated', false)->setParameter('archived', $modeArchived)->setParameter('path', $path->getId())->execute();
-
-			// check the filesystem for changes
-			$finder = new Finder();
-			$finder->files()->in(__DIR__)->in($path->getPath())->directories()->depth('== 0');
-			foreach ($finder as $file) {
-				if($file->getFilename() != "@eaDir")  {
-					$logger->debug("folder: " . $file->getFilename() . " (archived: " . $modeArchived . ")");
-					$enity = $em->getRepository('MovieasterMovieManagerBundle:Movie')->findOneBy(array('nameFolder' => $file->getFilename(), 'path' => $path->getId(), 'archived' => $modeArchived));
-					if ($enity) {
-						$logger->debug("still exist in DB");
-						$enity->setUpdated(true);
-						$em->flush();
-						$countOld++;
-					} else {
-						$logger->debug("create new DB record");
-						$folder = new Movie();
-						$folder->setNameFolder($file->getFilename());
-						$folder->setUpdated(true);
-						$folder->setFound(false);
-						$folder->setArchived($modeArchived);
-						$folder->setPath($path);
-						$em->persist($folder);
-						$em->flush();
-						$countNew++;
-					}
-					$logger->debug("updated.");
+			$this->markAllMoviesInPathForUpdate($path->getId());
+			$folderNames = FileSystemUtil::allFolderNames($path->getPath());
+			foreach ($folderNames as $folderName) {
+				$enity = $em->getRepository('MovieasterMovieManagerBundle:Movie')
+							->findOneBy(array('nameFolder' => $folderName, 'path' => $path->getId(), 'archived' => $this->isArchivedMode()));
+				if ($enity) {
+					$enity->setUpdated(true);
+					$countOld++;
+				} else {
+					$folder = new Movie();
+					$folder->setNameFolder($folderName);
+					$folder->setUpdated(true);
+					$folder->setFound(false);
+					$folder->setArchived($this->isArchivedMode());
+					$folder->setPath($path);
+					$em->persist($folder);
+					$countNew++;
 				}
+				$em->flush();
 			}
 		}
-		
-		$logger->debug("remove old db folder/movie records:");
-		// remove old db folder/movie records
 		$countDelete = 0;
-		$deleteFolders = $em->getRepository('MovieasterMovieManagerBundle:Movie')->findBy(array('updated' => false, 'archived' => $modeArchived));
+		$deleteFolders = $em->getRepository('MovieasterMovieManagerBundle:Movie')
+								->findBy(array('updated' => false, 'archived' => $this->isArchivedMode()));
 		foreach ($deleteFolders as $deleteFolder) {
-			$logger->debug("deleteFolder: " . $deleteFolder->getName());
 			$countDelete++;
 			$em->remove($deleteFolder);
 			$em->flush();
-			$logger->debug("Folder deleted");
 		}
-		$logger->debug("all old db records removed");
-
-		$logger->debug("Done (countNew: " . $countNew . " / countOld: " . $countOld . " / countDelete: " . $countDelete . ")");
-		// return statistics
 		return JSONUtil::createJsonResponse(array('n' => $countNew, 'o' => $countOld, 'd' => $countDelete));
 	}
 
+	private function markAllMoviesInPathForUpdate($pathId)
+	{
+		$em = $this->getDoctrine()->getEntityManager();
+		$em->createQuery('UPDATE MovieasterMovieManagerBundle:Movie f SET f.updated=:updated WHERE f.path=:path and f.archived=:archived')
+			->setParameter('updated', false)
+			->setParameter('archived', $this->isArchivedMode())
+			->setParameter('path', $pathId)->execute();
+	}
+	
 	/**
 	 * Finds next ToDo entry (Folder without stored Movie).
 	 *
@@ -111,18 +93,12 @@ class FolderController extends Controller
 	 */
 	public function todoNextAction()
 	{
-		$modeArchived = false;
-
-		$logger = $this->get('logger');
-		$logger->debug("Check for ToDo Folders:");
-
 		$em = $this->getDoctrine()->getEntityManager();
-		$entity = $em->getRepository('MovieasterMovieManagerBundle:Movie')->findOneBy(array('found' => false, 'archived' => $modeArchived));
+		$entity = $em->getRepository('MovieasterMovieManagerBundle:Movie')
+						->findOneBy(array('found' => false, 'archived' => $this->isArchivedMode()));
 		if (!$entity) {
-			$logger->debug("No ToDo found!");
 			$values = array("i" => -1);
 		} else {
-			$logger->debug("ToDo Folder found: " . $entity->getNameFolder());
 			$values = array("i" => $entity->getId(), "n" => $entity->getNameFolder());
 		}
 		return JSONUtil::createJsonResponse($values);
@@ -135,8 +111,6 @@ class FolderController extends Controller
 	 */
 	public function tmdbMetaAction($id)
 	{
-		$modeArchived = false;
-		
 		$logger = $this->get('logger');
 		$logger->debug("Get TmDB Meta Infos for Folder ID: " . $id);
 		
@@ -146,17 +120,17 @@ class FolderController extends Controller
 		
 		// parse folder using the naming convention: "Movie Name (Year)"
 		if(preg_match('/(?P<name>\w+) \((?P<year>\d+)\)/', $movie->getNameFolder(), $movieFolderInfo)) {
-			$moviesResult = TMDbFactory::createInstance()->searchMovie($movieFolderInfo["name"], 1, FALSE, $movieFolderInfo["year"], NULL);
+			$moviesResult = TMDbFactory::getIdsByNameAndYear($movieFolderInfo["name"], $movieFolderInfo["year"]);
 		} else {
-			$moviesResult = TMDbFactory::createInstance()->searchMovie($movie->getNameFolder());
+			$moviesResult = TMDbFactory::getIdsByName($movie->getNameFolder());
 		}
-		if(count($moviesResult["results"]) == 0) {
+		if(count($moviesResult) == 0) {
 			$logger->debug("remove not found Movie folder: " . $movie->getNameFolder());
 			$em->remove($movie);
 			$em->flush();
 			return JSONUtil::createJsonResponse(array("f" => 0, "e" => "TMDb not found", "n" => $movie->getNameFolder()));
 		}
-		$tmdbId = $moviesResult["results"][0]["id"];
+		$tmdbId = $moviesResult[0];
 		$movieInfo = TMDbFactory::createMovieInfoById($tmdbId);
 		$movie->setFound(true);
 		$movie->setName($movieInfo->name);
@@ -193,7 +167,7 @@ class FolderController extends Controller
 	public function downloadImgThumbAction($id)
 	{
 		//TODO: remove methode
-		return JSONUtil::createJsonResponse(array("f" => true));
+		return JSONUtil::createJsonResponseFound(true);
 	}
 
 	/**
@@ -205,7 +179,7 @@ class FolderController extends Controller
 	{
 		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getPoster(), $movie, 'folder.jpg');
-		return JSONUtil::createJsonResponse(array("f" => $found));
+		return JSONUtil::createJsonResponseFound($found);
 	}
 	
 	/**
@@ -217,7 +191,7 @@ class FolderController extends Controller
 	{	 
 		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getBackdrop1(), $movie, 'backdrop.jpg');
-		return JSONUtil::createJsonResponse(array("f" => $found));
+		return JSONUtil::createJsonResponseFound($found);
 	}
 	
 	/**
@@ -229,7 +203,7 @@ class FolderController extends Controller
 	{ 
 		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getBackdrop2(), $movie, 'backdrop1.jpg');
-		return JSONUtil::createJsonResponse(array("f" => $found));
+		return JSONUtil::createJsonResponseFound($found);
 	}
 
 	/**
@@ -241,7 +215,7 @@ class FolderController extends Controller
 	{
 		$movie = $this->loadMovie($id);
 		$found = $this->downloadImg($movie->getBackdrop3(), $movie, 'backdrop2.jpg');
-		return JSONUtil::createJsonResponse(array("f" => $found));
+		return JSONUtil::createJsonResponseFound($found);
 	}
 
 	/**
@@ -279,6 +253,12 @@ class FolderController extends Controller
 			throw $this->createNotFoundException('Unable to find Movie entity.');
 		}
 		return $movie;
+	}
+	
+	private function isArchivedMode()
+	{
+		//not supported for now
+		return false;
 	}
 
 }
