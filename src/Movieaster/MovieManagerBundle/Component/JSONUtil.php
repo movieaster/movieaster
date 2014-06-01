@@ -26,5 +26,32 @@ class JSONUtil
 	{
 		return JSONUtil::createJsonResponse(array("f" => $found));
 	}
+	
+	public static  function createJsonMovieInfo($entity) {
+		$values["i"] = $entity->getId();
+		$values["c"] = $entity->getThumbInline();
+		$values["t"] = $entity->getName();
+		$values["t2"] = $entity->getNameOriginal();
+		$values["t3"] = $entity->getNameAlternative();
+		$values["y"] = $entity->getReleased()->format("Y");
+		$values["r"] = $entity->getRatingTmdb();
+		$values["v"] = $entity->getVotesTmdb();
+		$values["g"] = $entity->getGenres();
+		$values["a"] = $entity->getActors();
+		$values["o"] = $entity->getOverview();
+		$values["ti"] = $entity->getTmdbId();
+		$values["ii"] = $entity->getImdbId();
+		$values["h"] = $entity->getHomepage();
+		$values["tr"] = str_replace("http://www.youtube.com/watch?v=",
+									"http://www.youtube-nocookie.com/embed/", $entity->getTrailer());
+		$values["b1"] = $entity->getBackdrop1();
+		$values["b2"] = $entity->getBackdrop2();
+		$values["b3"] = $entity->getBackdrop3();
+		if(method_exists($entity,'getPath')) {
+			$values["p"] = $entity->getPath()->getName();
+		}
+		return $values; 
+	}
+
 }
 ?>
