@@ -165,18 +165,7 @@ class FolderController extends Controller
 		$em->persist($movie);
 		$em->flush();
 	}
-
-	/**
-	 * download movie folder image thumbnail.
-	 *
-	 * @Route("/{id}/download/image/thumb", name="download_img_thumb")
-	 */
-	public function downloadImgThumbAction($id)
-	{
-		//TODO: remove methode
-		return JSONUtil::createJsonResponseFound(true);
-	}
-
+	
 	/**
 	 * download movie folder image.
 	 *
