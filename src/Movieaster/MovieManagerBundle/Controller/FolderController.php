@@ -111,13 +111,7 @@ class FolderController extends Controller
 	 */
 	public function tmdbMetaAction($id)
 	{
-		$logger = $this->get('logger');
-		$logger->debug("Get TmDB Meta Infos for Folder ID: " . $id);
-		
-		$em = $this->getDoctrine()->getEntityManager();
 		$movie = $this->loadMovie($id);
-		$logger->debug("Get TmDB Meta Infos for Folder: " . $movie->getNameFolder());
-		
 		// parse folder using the naming convention: "Movie Name (Year)"
 		if(preg_match('/(?P<name>\w+) \((?P<year>\d+)\)/', $movie->getNameFolder(), $movieFolderInfo)) {
 			$moviesResult = TMDbFactory::getIdsByNameAndYear($movieFolderInfo["name"], $movieFolderInfo["year"]);
@@ -125,12 +119,25 @@ class FolderController extends Controller
 			$moviesResult = TMDbFactory::getIdsByName($movie->getNameFolder());
 		}
 		if(count($moviesResult) == 0) {
-			$logger->debug("remove not found Movie folder: " . $movie->getNameFolder());
-			$em->remove($movie);
-			$em->flush();
+			$this->removeMovie($movie);
 			return JSONUtil::createJsonResponse(array("f" => 0, "e" => "TMDb not found", "n" => $movie->getNameFolder()));
 		}
 		$tmdbId = $moviesResult[0];
+		$this->updateMovieMeta($movie, $tmdbId);
+		return JSONUtil::createJsonResponse(array("f" => 1, "i" => $movie->getId(), "n" => $movie->getName()));
+	}
+	
+	private function removeMovie($movie)
+	{
+		$logger = $this->get('logger');
+		$logger->debug("remove not found Movie folder: " . $movie->getNameFolder());
+		$em = $this->getDoctrine()->getEntityManager();
+		$em->remove($movie);
+		$em->flush();
+	}
+		
+	private function updateMovieMeta($movie, $tmdbId)
+	{
 		$movieInfo = TMDbFactory::createMovieInfoById($tmdbId);
 		$movie->setFound(true);
 		$movie->setName($movieInfo->name);
@@ -154,9 +161,9 @@ class FolderController extends Controller
 		$movie->setBackdrop1($movieInfo->backdrop1);
 		$movie->setBackdrop2($movieInfo->backdrop2);
 		$movie->setBackdrop3($movieInfo->backdrop3);
+		$em = $this->getDoctrine()->getEntityManager();
 		$em->persist($movie);
 		$em->flush();
-		return JSONUtil::createJsonResponse(array("f" => 1, "i" => $movie->getId(), "n" => $movie->getName()));
 	}
 
 	/**
